@@ -1,6 +1,44 @@
 from utils import custom_exceptions as exp
 import os
 
+# Criando o menu de check-in
+def checkin_menu():
+    # Definindo as opções do menu principal
+    menu = ['Check-in', 
+            '1. Mostrar quartos disponíveis', 
+            '2. Hospedar', 
+            '3. Voltar']
+    return menu
+
+# Criando o menu de check-out
+def checkout_menu():
+    # Definindo as opções do menu principal
+    menu = ['Check-out', 
+            '1. Localizar hospedagem', 
+            '2. Voltar']
+    return menu
+
+# Criando menu para gerenciamento do hotel
+def hotel_management_menu():
+    # Definindo opções
+    menu = ['Gerenciamento do Hotel',
+            '1. Visualizar todos os hotéis',
+            '2. Cadastrar novo hotel',
+            '3. Atualizar hotel',
+            '4. Excluir hotel',
+            '5. Voltar']
+    return menu  
+
+# Criando menu para gerenciamento de funcionários
+def employees_management_menu():
+    menu = ['Gerenciamento de Funionários', 
+            '1. Adicionar funcionário', 
+            '2. Ver detalhes de um funcionáio', 
+            '3. Ver todos os funcionários', 
+            '4. Deletar um funcionário', 
+            '5. Voltar']
+    return menu
+
 # Criando o menu principal
 def main_menu():
     # Definindo as opções do menu principal
@@ -17,13 +55,10 @@ def admin_menu():
     # Definindo opções
     menu = main_menu()
     menu.pop()
-    admin_items = ['5. Gerenciar Hotel', '6. Gerenciar funcionários', '7. Sair']
+    admin_items = ['5. Gerenciar Hotel', 
+                    '6. Gerenciar funcionários', 
+                    '7. Sair']
     menu.extend(admin_items)
-    return menu
-
-# Criando menu para gerenciamento de funcionários
-def employees_management_menu():
-    menu = ['Gerenciamento de Funionários', '1. Adicionar funcionário', '2. Ver detalhes de um funcionáio', '3. Ver todos os funcionários', '4. Deletar um funcionário', '5. Voltar']
     return menu
 
 # Criando função para exibir o menu escolhido

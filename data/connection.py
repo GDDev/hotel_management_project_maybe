@@ -55,7 +55,7 @@ def create_tables(conn):
                 id INTEGER PRIMARY KEY,
                 username TEXT,
                 password TEXT,
-                role TEXT CHECK(role IN ('admin', 'employee'))
+                role TEXT CHECK(role IN ('admin', 'receptionist'))
             )
         ''')
 

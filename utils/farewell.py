@@ -9,7 +9,7 @@ def random_farewell():
         'Que a força esteja com você!',
         'Ao infinito e além!',
         'Obrigado por utilizar de nossos serviços, volte sempre!!!',
-        'Ficamos grato em ter feito parte disso com voce, volte sempre :)!',
+        'Ficamos grato em ter feito parte disso com você, volte sempre :)!',
         'Obrigado seu Zé Ruela, agora pague-nos!'
     ] 
     # Retornando uma despedida aleatória

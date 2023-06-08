@@ -2,7 +2,7 @@ import sqlite3, data.connection as connection
 from passlib.hash import bcrypt
 from utils.custom_exceptions import PermissionError
 from utils import setup as stp
-from classes.user import Admin
+from classes.admin import Admin
 
 # Criando o banco de dados
 class Database:
@@ -116,7 +116,7 @@ class Database:
             raise PermissionError()
 
     # Função para inserir um novo usuário
-    def insert_user(self, username, password, role = 'employee'):
+    def insert_user(self, username, password, role = 'receptionist'):
         # Checando se o usuário tem permissões para realizar essa inserção
         self.check_admin_access()
         try:
