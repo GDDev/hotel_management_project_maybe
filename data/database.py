@@ -2,6 +2,7 @@ import sqlite3, data.connection as connection
 from passlib.hash import bcrypt
 from utils.custom_exceptions import PermissionError
 from utils import setup as stp
+from classes.user import Admin
 
 # Criando o banco de dados
 class Database:
@@ -47,6 +48,7 @@ class Database:
         finally:
             if cursor:
                 cursor.close()
+            return username, password
 
     # Criação de um método para encriptar a senha
     @staticmethod
@@ -75,9 +77,10 @@ class Database:
         # Chamando função de boas-vindas
         stp.greetings()
         # Criando um usuário padrão
-        self.insert_admin_user()
+        username, password = self.insert_admin_user()
         # Fechando a conexão
         self.disconnect()
+        return Admin(username, password)
 
     # Criando função para recuperar todos os usuários do db
     def get_all_users(self):

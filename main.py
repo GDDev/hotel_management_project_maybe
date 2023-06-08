@@ -92,7 +92,7 @@ if __name__ == '__main__':
             # Conectando com o banco de dados
             db = database.Database('hotel.db')
             # Executando a função de inicialização do bd
-            db.initialize()
+            user = db.initialize()
         else:
             # Conectando com o banco de dados
             db = database.Database('hotel.db')
