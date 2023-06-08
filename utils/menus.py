@@ -20,19 +20,22 @@ def employees_management_menu():
 
 # Criando função para exibir o menu escolhido
 def menu(menu_list):
+    # Validando a opção escolhida
+    def validate_menu_choice(length):
+        while True:
+            # Recebendo opção escolhida
+            choice = input('Selecione uma opção: ')
+            os.system('cls')
+            # Verificando se é uma das existentes
+            if int(choice) in range(1, length):
+                # Opção válida é retornada
+                return choice
+            raise exp.InvalidChoiceError()
+
     show_menu = menu_list()
     for line in show_menu:
         print(line)
     
-# Validando a opção escolhida
-def validate_menu_choice(length):
-    while True:
-        # Recebendo opção escolhida
-        choice = input('Selecione uma opção: ')
-        os.system('cls')
-        # Verificando se é uma das existentes
-        if int(choice) in range(1, length):
-            # Opção válida é retornada
-            return choice
-        raise exp.InvalidChoiceError()
-
+    length = len(show_menu)
+    choice = validate_menu_choice(length)
+    return choice
