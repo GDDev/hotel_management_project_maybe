@@ -23,8 +23,9 @@ def login():
 # Função para gerenciamento de funcionários
 def employee_management():
     while True:
-        mn.employees_management_menu()
-        choice = mn.validate_emp_mng_menu_choice()
+        mn.menu(mn.employees_management_menu)
+        length = len(mn.employees_management_menu())
+        choice = mn.validate_menu_choice(length)
         if choice == '1':
             pass
         elif choice == '2':
@@ -42,10 +43,11 @@ def main():
     while True:
         # Exibindo o menu principal
         if user.role == 'admin':
-            mn.admin_main_menu()
+            mn.menu(mn.admin_menu)
             try:
                 # Lendo a escolha do usuário
-                choice = mn.validate_admin_main_menu_choice()
+                length = len(mn.admin_menu())
+                choice = mn.validate_menu_choice(length)
 
                 if choice == '1':
                     pass
