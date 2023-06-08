@@ -1,6 +1,7 @@
 import sqlite3, data.connection as connection
 from passlib.hash import bcrypt
 from utils.custom_exceptions import PermissionError
+from utils import setup as stp
 
 # Criando o banco de dados
 class Database:
@@ -23,6 +24,29 @@ class Database:
     # Função para chamar a criação das tabelas
     def create_tables(self):
         connection.create_tables(self.connection)
+    # Inserindo um usuário ADMIN padrão
+    # Definitivamente não precisa remover isso antes da produção :)
+    def insert_admin_user(self):
+        # Criando a query de comando
+        query = 'INSERT INTO users (username, password, role) VALUES (?, ?, ?)'
+        # Definindo as variáveis
+        username, password, role = stp.setup_admin_user()
+        # Chamando o método de encriptação da senha
+        hashed_password = self.hash_password(password)
+        # Atribuindo as variáveis aos placeholders da query
+        values = (username, hashed_password, role)
+        try:
+            # Criando o executor de comandos
+            cursor = self.connection.cursor()
+            # Executando a query
+            cursor.execute(query, values)
+            # Confirmando as alterações
+            self.connection.commit()
+        except sqlite3.Error as e:
+            print(e)
+        finally:
+            if cursor:
+                cursor.close()
 
     # Criação de um método para encriptar a senha
     @staticmethod
@@ -41,32 +65,6 @@ class Database:
         # Retornando Falso, caso sejam diferentes
         return False
 
-    # Inserindo um usuário ADMIN padrão
-    # Definitivamente não precisa remover isso antes da produção :)
-    def insert_admin_user(self):
-        # Criando a query de comando
-        query = 'INSERT INTO users (username, password, role) VALUES (?, ?, ?)'
-        # Definindo as variáveis
-        username = 'g0D'
-        # password = 'Im_Th3@B3@sT75'
-        role = 'admin'
-        # Chamando o método de encriptação da senha
-        hashed_password = self.hash_password('1')
-        # Atribuindo as variáveis aos placeholders da query
-        values = (username, hashed_password, role)
-
-        try:
-            # Criando o executor de comandos
-            cursor = self.connection.cursor()
-            # Executando a query
-            cursor.execute(query, values)
-            # Confirmando as alterações
-            self.connection.commit()
-        except sqlite3.Error as e:
-            print(e)
-        finally:
-            if cursor:
-                cursor.close()
 
     # Criando função para inicializar o banco de dados
     def initialize(self):
@@ -74,6 +72,8 @@ class Database:
         self.connect()
         # Criando as tabelas
         self.create_tables()
+        # Chamando função de boas-vindas
+        stp.greetings()
         # Criando um usuário padrão
         self.insert_admin_user()
         # Fechando a conexão

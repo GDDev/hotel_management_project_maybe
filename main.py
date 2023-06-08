@@ -15,6 +15,7 @@ def login():
     user_role = user[3]
         
     # Definindo o tipo de usuário logado
+    os.system('cls')
     if user_role == 'admin':
         return usr.Admin(username, password)
     elif user_role == 'employee':
@@ -23,6 +24,7 @@ def login():
 # Função para gerenciamento de funcionários
 def employee_management():
     while True:
+        # Chamando o menu e recebendo a opção escolhida
         choice = mn.menu(mn.employees_management_menu)
         if choice == '1':
             pass
@@ -42,7 +44,7 @@ def main():
         # Exibindo o menu principal
         if user.role == 'admin':
             try:
-                # Lendo a escolha do usuário
+                # Chamando o menu e recebendo a opção escolhida
                 choice = mn.menu(mn.admin_menu)
 
                 if choice == '1':
@@ -54,8 +56,10 @@ def main():
                 elif choice == '4':
                     pass
                 elif choice == '5':
-                    employee_management()
+                    pass
                 elif choice == '6':
+                    employee_management()
+                elif choice == '7':
                     # Encerrando o programa
                     print(fw.random_farewell())
                     break
@@ -63,7 +67,7 @@ def main():
                 print(e)
         else:
             try:
-                # Lendo a escolha do usuário
+                # Chamando o menu e recebendo a opção escolhida
                 choice = mn.menu(main_menu)
 
                 if choice == '1':
@@ -73,6 +77,8 @@ def main():
                 elif choice == '3':
                     pass
                 elif choice == '4':
+                    pass
+                elif choice == '5':
                     # Encerrando o programa
                     print(fw.random_farewell())
                     break
@@ -82,12 +88,16 @@ def main():
 # Iniciando o programa
 if __name__ == '__main__':
     try:
-        # Conectando com o banco de dados
-        db = database.Database('hotel.db')
-        # Executando a função de inicialização do bd
-        db.initialize()
-        # Executando o login
-        user = login()
+        if not os.path.isfile('hotel.db'):
+            # Conectando com o banco de dados
+            db = database.Database('hotel.db')
+            # Executando a função de inicialização do bd
+            db.initialize()
+        else:
+            # Conectando com o banco de dados
+            db = database.Database('hotel.db')
+            # Executando o login
+            user = login()
         # Executando o programa
         main()
     except exp.LoginError as e:
