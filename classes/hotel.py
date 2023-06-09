@@ -84,3 +84,12 @@ class Hotel:
                 print('Opção inválida')
         else:
             print('Hotel inválido.\n')
+
+    def delete_hotel(db):
+        system('cls')
+        print('Hotéis')
+        hotels = Hotel.display_hotels(db)
+        choice = input('Qual hotel deseja excluir? ')
+        int_choice = int(choice)
+        if int_choice in range(1, len(hotels) + 1):
+            Database.exclude_hotel(db, choice)

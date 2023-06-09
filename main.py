@@ -64,7 +64,7 @@ def hotel_management():
             Hotel.update_hotel_info(db)
             input('Pressione Enter para voltar...')
         elif choice == '4':
-            logged_user.delete_hotel()
+            Hotel.delete_hotel(db)
             input('Pressione Enter para voltar...')
         elif choice == '5':
             break

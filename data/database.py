@@ -209,4 +209,20 @@ class Database:
         finally:
             if self.connection:
                 self.disconnect()
+
+    def exclude_hotel(self, id):
+        try:
+            self.connect()
+            cursor = self.connection.cursor()
+            query = ('DELETE FROM Hotels WHERE id == ?')
+            value = id
+            cursor.execute(query, value)
+            self.connection.commit()
+            cursor.close()
+            pass
+        except sqlite3.Error as e:
+            print(e)
+        finally:
+            if self.connection:
+                self.disconnect()
                 
