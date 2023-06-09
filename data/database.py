@@ -2,7 +2,6 @@ import sqlite3, data.connection as connection
 from passlib.hash import bcrypt
 from utils.custom_exceptions import PermissionError
 from utils import setup as stp
-from classes.admin import Admin
 
 # Criando o banco de dados
 class Database:
@@ -18,15 +17,17 @@ class Database:
     # Função para atribuir a conexão ao atributo
     def connect(self):
         self.connection = connection.create_connection(self.db_name)
+
     # Função para remover a atribuição da conexão
     def disconnect(self):
         connection.kill_connection(self.connection)
         self.connection = None
+
     # Função para chamar a criação das tabelas
     def create_tables(self):
         connection.create_tables(self.connection)
-    # Inserindo um usuário ADMIN padrão
-    # Definitivamente não precisa remover isso antes da produção :)
+
+    # Inserindo um usuário ADMIN inicial
     def insert_admin_user(self):
         # Criando a query de comando
         query = 'INSERT INTO users (username, password, role) VALUES (?, ?, ?)'
@@ -80,7 +81,7 @@ class Database:
         username, password = self.insert_admin_user()
         # Fechando a conexão
         self.disconnect()
-        return Admin(username, password)
+        return (username, password)
 
     # Criando função para recuperar todos os usuários do db
     def get_all_users(self):
@@ -104,21 +105,30 @@ class Database:
                 # Encerrando a conexão
                 self.connection.close()
         return users
-
-    # Criando função para verificar se o usuário é ADMIN
-    def login(self, user):
-        if user.role == 'admin':
-            self.is_admin = True
-
-    # Função para chamar a função que verifica o tipo de usuário... Não me pergunte
-    def check_admin_access(self):
-        if not self.is_admin:
-            raise PermissionError()
+    
+    def get_all_hotels(self):
+        hotels = []
+        try:
+            # Conectando com o db
+            self.connect()
+            # Criando o executor
+            cursor = self.connection.cursor()
+            # Executando a busca pelos hotéis
+            cursor.execute('SELECT * FROM Hotels')
+            # Armazenando o resultado na variável
+            hotels = cursor.fetchall()
+            # Encerrando o executor
+            cursor.close()
+        except sqlite3.Error as e:
+            print(e)
+        finally:
+            if self.connection:
+                # Fechando a conexão
+                self.disconnect()
+        return hotels
 
     # Função para inserir um novo usuário
     def insert_user(self, username, password, role = 'receptionist'):
-        # Checando se o usuário tem permissões para realizar essa inserção
-        self.check_admin_access()
         try:
             # Criando o executor
             cursor = self.connection.cursor()
@@ -140,17 +150,26 @@ class Database:
                 # Fechando a conexão
                 self.connection.close()
 
-    # Criando função para listar os quartos
-    # def get_all_rooms(self):
-    #     rooms = []
-    #     try:
-    #         cursor = self.connection.cursor()
-    #         cursor.execute('SELECT * FROM Rooms')
-    #         rooms = cursor.fetchall()
-    #         cursor.close()
-    #     except sqlite3.Error as e:
-    #         print(e)
-    #     finally:
-    #         if self.connection:
-    #             self.connection.close()
-    #     return rooms
+    def insert_hotel(self, hotel):
+        try:
+            # Conectando com o db
+            self.connect()
+            # Criando o executor
+            cursor = self.connection.cursor()
+            # Criando a query de inserção
+            query = 'INSERT INTO Hotels (name, address, city, state, country) VALUES (?, ?, ?, ?, ?)'
+            name, address, city, state, country = hotel
+            values = (name, address, city, state, country)
+            # Execução da query com a substituição dos placeholders
+            cursor.execute(query, values)
+            # Confirmação das alterações
+            self.connection.commit()
+            # Encerramento do executor
+            cursor.close()
+        except sqlite3.Error as e:
+            print(e)
+        finally:
+            if self.connection:
+                # Fechando a conexão
+                self.disconnect()
+                

@@ -1,6 +1,6 @@
 # Importando tudo o que vai usar
 import os
-# from classes.hotel import Hotel
+from classes.hotel import Hotel
 # from classes.guest import Guest 
 # from classes.room import Room
 from classes.admin import Admin
@@ -32,9 +32,11 @@ def check_in():
         # Chamando o menu e recebendo a opção escolhida
         choice = menus.menu(menus.checkin_menu)
         if choice == '1':
-            pass
+            logged_user.display_available_rooms()
+            input('Pressione Enter para voltar...')
         elif choice == '2':
-            pass
+            logged_user.checkin_guest()
+            input('Pressione Enter para voltar...')
         elif choice == '3':
             break
 
@@ -43,7 +45,8 @@ def check_out():
         # Chamando o menu e recebendo a opção escolhida
         choice = menus.menu(menus.checkout_menu)
         if choice == '1':
-            pass
+            logged_user.display_occupied_room_info()
+            input('Pressione Enter para voltar...')
         elif choice == '2':
             break
 
@@ -52,29 +55,33 @@ def hotel_management():
         # Chamando o menu e recebendo a opção escolhida
         choice = menus.menu(menus.hotel_management_menu)
         if choice == '1':
-            pass
+            Hotel.display_hotels(db)
+            input('Pressione Enter para voltar...')
         elif choice == '2':
-            pass
+            Hotel.create_new_hotel(db)
+            input('Pressione Enter para voltar...')
         elif choice == '3':
-            pass
+            Hotel.update_hotel_info(db)
+            input('Pressione Enter para voltar...')
         elif choice == '4':
-            pass
+            logged_user.delete_hotel()
+            input('Pressione Enter para voltar...')
         elif choice == '5':
             break
 
 # Função para gerenciamento de funcionários
-def employee_management():
+def staff_management():
     while True:
         # Chamando o menu e recebendo a opção escolhida
-        choice = menus.menu(menus.employees_management_menu)
+        choice = menus.menu(menus.staff_management_menu)
         if choice == '1':
-            pass
+            logged_user.add_employee()
         elif choice == '2':
-            pass
+            logged_user.show_employee_info()
         elif choice == '3':
-            pass
+            logged_user.show_staff()
         elif choice == '4':
-            pass
+            logged_user.delete_employee()
         elif choice == '5':
             break
 
@@ -93,13 +100,13 @@ def main():
                 elif choice == '2':
                     check_out()
                 elif choice == '3':
-                    pass
+                    logged_user.display_available_rooms()
                 elif choice == '4':
-                    pass
+                    logged_user.display_occupied_room_info()
                 elif choice == '5':
                     hotel_management()
                 elif choice == '6':
-                    employee_management()
+                    staff_management()
                 elif choice == '7':
                     # Encerrando o programa
                     print(random_farewell())
@@ -133,7 +140,8 @@ if __name__ == '__main__':
     try:
         if not os.path.isfile('hotel.db'):
             # Executando a função de inicialização do bd
-            logged_user = db.initialize()
+            username, password = db.initialize()
+            logged_user = Admin(username, password)
         else:
             # Executando o login
             logged_user = login()

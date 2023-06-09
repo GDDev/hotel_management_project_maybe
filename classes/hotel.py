@@ -1,45 +1,47 @@
-from classes.guest import Guest
-from classes.room import Room
-
+from data.database import Database
 # Criando classe para o hotel
 class Hotel:
     # Definindo atributos iniciais
-    def __init__(self):
+    def __init__(self, name, address, city, state, country):
         self.rooms = {}
+        self.name = name
+        self.address = address
+        self.city = city
+        self.state = state
+        self.country = country    
 
-    # Criando função para definir o nome do hotel
-    def set_hotel_name(self, name):
-        setattr(self, 'name', name)
-    # Criando função para definir o endereço (rua) do hotel
-    def set_hotel_address(self, address):
-        setattr(self, 'address', address)
-    # Criando função para definir a cidade do hotel
-    def set_hotel_city(self, city):
-        setattr(self, 'city', city)
-    # Criando função para definir o estado do hotel
-    def set_hotel_state(self, state):
-        setattr(self, 'state', state)
-    # Criando função para definir o país do hotel
-    def set_hotel_country(self, country):
-        setattr(self, 'country', country)
-    
+    def display_hotels(db):
+        hotels = Database.get_all_hotels(db)
+        for hotel in hotels:
+            id, name, address, city, state, country = hotel
+            print(f'{id}. Hotel {name}\n'
+                  f'Localizado em {address}, {city}-{state}, {country}\n')
+        return hotels
 
-    # def check_in(self, room_number, guest_name):
-    #     if room_number in self.rooms:
-    #         room = self.rooms[room_number]
-    #         room.check_in(Guest(guest_name))
-    #     else:
-    #         print(f'Room {room_number} does not exist.')
+    def create_new_hotel(db):
+        name = input('Informe o nome do Hotel: ')
+        address = input('Informe a rua do Hotel: ')
+        city = input('Informe a cidade do Hotel: ')
+        state = input('Informe o estado do Hotel: ')
+        country = input('Informe o país do Hotel: ')
 
-    # def check_out(self, room_number):
-    #     if room_number in self.rooms:
-    #         room = self.rooms[room_number]
-    #         room.check_out()
-    #     else:
-    #         print(f'Room {room_number} does not exist.')
+        hotel = (name, address, city, state, country)
+        Database.insert_hotel(db, hotel)
 
-    # def display_guests(self):
-    #     print('Occupied Rooms:')
-    #     for room_number, room in self.rooms.items():
-    #         if room.guest:
-    #             print(f'Room {room_number}: {room.guest.name}')
+    def update_hotel_info(db):
+        print('Hotéis')
+        hotels = Hotel.display_hotels(db)
+        choice = input('Qual hotel deseja alterar? ')
+        if int(choice) in range(1, len(hotels) + 1):
+            def change_hotel_name():
+                pass
+            def change_hotel_address():
+                pass
+            def change_hotel_city():
+                pass
+            def change_hotel_state():
+                pass
+            def change_hotel_country():
+                pass
+        else:
+            print('Hotel inválido.\n')

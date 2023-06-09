@@ -25,7 +25,7 @@ def create_tables(conn):
 
         # Criando a tabela do hotel
         cursor.execute('''
-            CREATE TABLE IF NOT EXISTS Hotel (
+            CREATE TABLE IF NOT EXISTS Hotels (
                 id INTEGER PRIMARY KEY,
                 name TEXT,
                 address TEXT,

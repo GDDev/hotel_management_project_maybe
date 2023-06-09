@@ -5,3 +5,12 @@ class User:
         self.username = username
         self.password = password
         self.role = role
+
+    def checkin_guest():
+        pass
+    def checkout_guest():
+        pass
+    def display_available_rooms():
+        pass
+    def display_occupied_room_info():
+        pass

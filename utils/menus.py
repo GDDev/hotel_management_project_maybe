@@ -1,5 +1,5 @@
 from utils import custom_exceptions as exp
-import os
+from os import system
 
 # Criando o menu de check-in
 def checkin_menu():
@@ -20,6 +20,7 @@ def checkout_menu():
 
 # Criando menu para gerenciamento do hotel
 def hotel_management_menu():
+    system('cls')
     # Definindo opções
     menu = ['Gerenciamento do Hotel',
             '1. Visualizar todos os hotéis',
@@ -30,7 +31,7 @@ def hotel_management_menu():
     return menu  
 
 # Criando menu para gerenciamento de funcionários
-def employees_management_menu():
+def staff_management_menu():
     menu = ['Gerenciamento de Funionários', 
             '1. Adicionar funcionário', 
             '2. Ver detalhes de um funcionáio', 
@@ -68,7 +69,7 @@ def menu(menu_list):
         while True:
             # Recebendo opção escolhida
             choice = input('Selecione uma opção: ')
-            os.system('cls')
+            system('cls')
             # Verificando se é uma das existentes
             if int(choice) in range(1, length):
                 # Opção válida é retornada

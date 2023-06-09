@@ -1,6 +1,6 @@
-# ⚠️****THIS IS JUST A COLLEGE ASSIGNMENT, NOT A TRUE PROJECT***⚠️ 
+# ⚠️*** *THIS IS JUST A COLLEGE ASSIGNMENT, NOT A TRUE PROJECT* ***⚠️ 
 
-# RUN ```pip install -r requirements.txt```
+# run ```pip install -r requirements.txt```
 
 # Hello there, friend :)
 #### Don't waste your time here...
