@@ -106,6 +106,21 @@ class Database:
                 self.connection.close()
         return users
     
+    def get_hotel(self, id):
+        try:
+            self.connect()
+            cursor = self.connection.cursor()
+            query = 'SELECT * FROM Hotels WHERE id == ?'
+            value = str(id)
+            cursor.execute(query, value)
+            hotel = cursor.fetchall()
+            return hotel[0]
+        except sqlite3.Error as e:
+            print(e)
+        finally:
+            if self.connection:
+                self.disconnect()
+
     def get_all_hotels(self):
         hotels = []
         try:
@@ -171,5 +186,27 @@ class Database:
         finally:
             if self.connection:
                 # Fechando a conexão
+                self.disconnect()
+    
+    def update_hotel(self, id, *args):
+        try:
+            name, address, city, state, country = args
+            query = 'UPDATE Hotels SET name = ?, address = ?, city = ?, state = ?, country = ?'
+            db_id, db_name, db_addr, db_city, db_state, db_ctr = self.get_hotel(id)
+            if name != db_name: db_name = name
+            if address != db_addr: db_addr =  address
+            if city != db_city: db_city = city
+            if state != db_state: db_state = state
+            if country != db_ctr: db_ctr = country
+            values = (db_name, db_addr, db_city, db_state, db_ctr)
+            self.connect()
+            cursor = self.connection.cursor()
+            cursor.execute(query, values)
+            self.connection.commit()
+            cursor.close()
+        except sqlite3.Error as e:
+            print(e)
+        finally:
+            if self.connection:
                 self.disconnect()
                 
