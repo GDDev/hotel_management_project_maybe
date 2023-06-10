@@ -11,6 +11,9 @@ from utils.login import perform_login
 from utils import custom_exceptions
 from data import database
 
+# Conectando com o banco de dados
+DB = database.Database('hotel.db')
+
 # Definindo uma função para logar o usuário
 def login():
     # Lendo as credenciais do usuário
@@ -18,7 +21,7 @@ def login():
     password = input('Senha: ')
 
     # Chamando a função de validação do login
-    *_, db_role = perform_login(db, username, password)
+    *_, db_role = perform_login(DB, username, password)
         
     # Definindo o tipo de usuário logado
     os.system('cls')
@@ -26,17 +29,31 @@ def login():
         return Admin(username, password)
     elif db_role == 'receptionist':
         return Receptionist(username, password)
+
+def choose_hotel():
+    os.system('cls')
+    hotels = Hotel.display_hotels(DB)
+    choice = input('Escolha um hotel: ')
+    int_choice = int(choice)
+    if int_choice in range(1, len(hotels) + 1):
+        hotel_id, name, address, city, state, country = hotels[int_choice - 1]
+        os.system('cls')
+        return (hotel_id, name, address, city, state, country)
+    else:
+        raise custom_exceptions.InvalidChoiceError('Hotel inválido.')
     
 def check_in():
     while True:
         # Chamando o menu e recebendo a opção escolhida
         choice = menus.menu(menus.checkin_menu)
         if choice == '1':
-            logged_user.display_available_rooms()
+            current_hotel.display_all_rooms()
             input('Pressione Enter para voltar...')
+            os.system('cls')
         elif choice == '2':
             logged_user.checkin_guest()
             input('Pressione Enter para voltar...')
+            os.system('cls')
         elif choice == '3':
             break
 
@@ -47,6 +64,7 @@ def check_out():
         if choice == '1':
             logged_user.display_occupied_room_info()
             input('Pressione Enter para voltar...')
+            os.system('cls')
         elif choice == '2':
             break
 
@@ -55,17 +73,21 @@ def hotel_management():
         # Chamando o menu e recebendo a opção escolhida
         choice = menus.menu(menus.hotel_management_menu)
         if choice == '1':
-            Hotel.display_hotels(db)
+            Hotel.display_hotels(DB)
             input('Pressione Enter para voltar...')
+            os.system('cls')
         elif choice == '2':
-            Hotel.create_new_hotel(db)
+            Hotel.create_new_hotel(DB)
             input('Pressione Enter para voltar...')
+            os.system('cls')
         elif choice == '3':
-            Hotel.update_hotel_info(db)
+            current_hotel.update_hotel_info(DB)
             input('Pressione Enter para voltar...')
+            os.system('cls')
         elif choice == '4':
-            Hotel.delete_hotel(db)
+            Hotel.delete_hotel(DB)
             input('Pressione Enter para voltar...')
+            os.system('cls')
         elif choice == '5':
             break
 
@@ -91,6 +113,7 @@ def main():
     while True:
         # Exibindo o menu principal
         if isinstance(logged_user, Admin):
+            os.system('cls')
             try:
                 # Chamando o menu e recebendo a opção escolhida
                 choice = menus.menu(menus.admin_menu)
@@ -100,7 +123,9 @@ def main():
                 elif choice == '2':
                     check_out()
                 elif choice == '3':
-                    logged_user.display_available_rooms()
+                    current_hotel.display_all_rooms()
+                    input('Pressione Enter para voltar...')
+                    os.system('cls')
                 elif choice == '4':
                     logged_user.display_occupied_room_info()
                 elif choice == '5':
@@ -133,20 +158,25 @@ def main():
             except custom_exceptions.InvalidChoiceError as e:
                 print(e)
 
-# Conectando com o banco de dados
-db = database.Database('hotel.db')
 # Iniciando o programa
 if __name__ == '__main__':
     try:
         if not os.path.isfile('hotel.db'):
             # Executando a função de inicialização do bd
-            username, password = db.initialize()
+            username, password = DB.initialize()
+            hotel_id, name, address, city, state, country = Hotel.create_new_hotel(DB)
+            current_hotel = Hotel(hotel_id, name, address, city, state, country)
             logged_user = Admin(username, password)
         else:
             # Executando o login
+            hotel_id, name, address, city, state, country = choose_hotel()
+            current_hotel = Hotel(hotel_id, name, address, city, state, country)
             logged_user = login()
         # Executando o programa
         main()
     except custom_exceptions.LoginError as e:
+        os.system('cls')
+        print(e)
+    except custom_exceptions.InvalidChoiceError as e:
         os.system('cls')
         print(e)

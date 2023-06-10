@@ -14,6 +14,8 @@ class Database:
         # Definindo o usuário como padrão
         self.is_admin = False
 
+    # *** FUNÇÕES DE CONEXÃO ***
+
     # Função para atribuir a conexão ao atributo
     def connect(self):
         self.connection = connection.create_connection(self.db_name)
@@ -22,6 +24,8 @@ class Database:
     def disconnect(self):
         connection.kill_connection(self.connection)
         self.connection = None
+
+    # *** FUNÇÕES DE CRIAÇÃO ***
 
     # Função para chamar a criação das tabelas
     def create_tables(self):
@@ -50,6 +54,72 @@ class Database:
             if cursor:
                 cursor.close()
             return username, password
+        
+    # Função para inserir um novo usuário
+    def insert_user(self, username, password, role = 'receptionist'):
+        try:
+            # Criando o executor
+            cursor = self.connection.cursor()
+            # Criando a query de inserção
+            query = 'INSERT INTO users (username, password, role) VALUES (?, ?, ?)'
+            # Encriptação da senha
+            hashed_password = self.hash_password(password)
+            values = (username, hashed_password, role)
+            # Execução da query com a substituição dos placeholders
+            cursor.execute(query, values)
+            # Confirmação das alterações
+            self.connection.commit()
+            # Encerramento do executor
+            cursor.close()
+        except sqlite3.Error as e:
+            print(e)
+        finally:
+            if self.connection:
+                # Fechando a conexão
+                self.connection.close()
+
+    def insert_hotel(self, hotel):
+        try:
+            # Conectando com o db
+            self.connect()
+            # Criando o executor
+            cursor = self.connection.cursor()
+            # Criando a query de inserção
+            query = 'INSERT INTO Hotels (name, address, city, state, country) VALUES (?, ?, ?, ?, ?)'
+            name, address, city, state, country = hotel
+            values = (name, address, city, state, country)
+            # Execução da query com a substituição dos placeholders
+            cursor.execute(query, values)
+            # Confirmação das alterações
+            self.connection.commit()
+            cursor.execute('SELECT id FROM Hotels ORDER BY id DESC LIMIT 1')
+            hotel_id = cursor.fetchone()
+            return (hotel_id, name, address, city, state, country)
+            # Encerramento do executor
+            cursor.close()
+        except sqlite3.Error as e:
+            print(e)
+        finally:
+            if self.connection:
+                # Fechando a conexão
+                self.disconnect()
+
+    def insert_room(self, room):
+        try:
+            self.connect()
+            cursor = self.connection.cursor()
+            query = 'INSERT INTO Rooms (number, type, capacity, price, available, hotel_id) VALUES (?, ?, ?, ?, ?, ?)'
+            values = (room.number, room.type.value, room.capacity, room.price, room.is_occupied, room.hotel)
+            cursor.execute(query, values)
+            self.connection.commit()
+            cursor.close()
+        except sqlite3.Error as e:
+            print(e)
+        finally:
+            if self.connection:
+                self.disconnect()
+
+    # *** FUNÇÕES DE MANIPULAÇÃO DE SENHA
 
     # Criação de um método para encriptar a senha
     @staticmethod
@@ -82,6 +152,8 @@ class Database:
         # Fechando a conexão
         self.disconnect()
         return (username, password)
+
+    # *** FUNÇÕES DE RECUPERAÇÃO DE OBJETOS ***
 
     # Criando função para recuperar todos os usuários do db
     def get_all_users(self):
@@ -141,53 +213,26 @@ class Database:
                 # Fechando a conexão
                 self.disconnect()
         return hotels
-
-    # Função para inserir um novo usuário
-    def insert_user(self, username, password, role = 'receptionist'):
-        try:
-            # Criando o executor
-            cursor = self.connection.cursor()
-            # Criando a query de inserção
-            query = 'INSERT INTO users (username, password, role) VALUES (?, ?, ?)'
-            # Encriptação da senha
-            hashed_password = self.hash_password(password)
-            values = (username, hashed_password, role)
-            # Execução da query com a substituição dos placeholders
-            cursor.execute(query, values)
-            # Confirmação das alterações
-            self.connection.commit()
-            # Encerramento do executor
-            cursor.close()
-        except sqlite3.Error as e:
-            print(e)
-        finally:
-            if self.connection:
-                # Fechando a conexão
-                self.connection.close()
-
-    def insert_hotel(self, hotel):
-        try:
-            # Conectando com o db
-            self.connect()
-            # Criando o executor
-            cursor = self.connection.cursor()
-            # Criando a query de inserção
-            query = 'INSERT INTO Hotels (name, address, city, state, country) VALUES (?, ?, ?, ?, ?)'
-            name, address, city, state, country = hotel
-            values = (name, address, city, state, country)
-            # Execução da query com a substituição dos placeholders
-            cursor.execute(query, values)
-            # Confirmação das alterações
-            self.connection.commit()
-            # Encerramento do executor
-            cursor.close()
-        except sqlite3.Error as e:
-            print(e)
-        finally:
-            if self.connection:
-                # Fechando a conexão
-                self.disconnect()
     
+    def get_hotel_rooms(self, id):
+        rooms = []
+        try:
+            self.connect()
+            cursor = self.connection.cursor()
+            query = 'SELECT * FROM Rooms WHERE hotel_id == ?'
+            value = str(id)
+            cursor.execute(query, value)
+            rooms = cursor.fetchall()
+            cursor.close()
+        except sqlite3.Error as e:
+            print(e)
+        finally:
+            if self.connection:
+                self.disconnect()
+        return rooms
+
+    # *** FUNÇÕES DE MANIPULAÇÃO DE OBJETOS ***
+
     def update_hotel(self, id, *args):
         try:
             name, address, city, state, country = args

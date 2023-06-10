@@ -62,6 +62,14 @@ def admin_menu():
     menu.extend(admin_items)
     return menu
 
+def update_hotel_menu():
+    menu = ['Atualizar Hotel', 
+            '1. Adicionar quarto', 
+            '2. Adicionar funcionário', 
+            '3. Editar Hotel', 
+            '4. Voltar']
+    return menu
+
 # Criando função para exibir o menu escolhido
 def menu(menu_list):
     # Validando a opção escolhida

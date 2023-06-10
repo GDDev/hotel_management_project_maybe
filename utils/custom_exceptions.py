@@ -10,5 +10,9 @@ class LoginError(Exception):
 
 # Criando exceção para falha de permissão em realização de funções
 class PermissionError(Exception):
-    def __init__(self, message='Você não possue permissão para realizar esta ação'):
+    def __init__(self, message='Você não possue permissão para realizar esta ação.'):
+        super().__init__(message)
+
+class RoomTypeError(Exception):
+    def __init___(self, message='Tipo inválido para quarto.'):
         super().__init__(message)
