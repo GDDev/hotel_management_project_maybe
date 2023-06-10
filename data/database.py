@@ -115,7 +115,7 @@ class Database:
             cursor.execute('SELECT id FROM Rooms ORDER BY id DESC LIMIT 1')
             room_id = cursor.fetchone()
             cursor.close()
-            return (room_id[0], number, type, capacity, price, is_occupied, hotel_id)
+            return (room_id, number, type, capacity, price, is_occupied, hotel_id)
         except sqlite3.Error as e:
             print(e)
         finally:
@@ -134,7 +134,7 @@ class Database:
             cursor.execute('SELECT id FROM Guests ORDER BY id DESC LIMIT 1')
             guest_id = cursor.fetchone()
             cursor.close()
-            return (guest_id[0], name, last_name, email, phone)
+            return guest_id
         except sqlite3.Error as e:
             print(e)
         finally:
@@ -145,15 +145,15 @@ class Database:
         try:
             self.connect()
             cursor = self.connection.cursor()
-            query = 'INSERT INTO Checkins (check_in, check_out, guest_id, room_id, hotel_id) VALUES (?, ?, ?, ?, ?)'
+            query = 'INSERT INTO Checkins (check_in, guest_id, room_id, hotel_id) VALUES (?, ?, ?, ?)'
             check_in_date, guest_id, room_id, hotel_id = checkin
-            values = (check_in_date, None, guest_id, room_id, hotel_id)
+            values = (check_in_date, guest_id, room_id, hotel_id)
             cursor.execute(query, values)
             self.connection.commit()
             cursor.execute('SELECT id FROM Checkins ORDER BY id DESC LIMIT 1')
             checkin_id = cursor.fetchone()
             cursor.close()
-            return checkin_id[0]
+            return checkin_id
         except sqlite3.Error as e:
             print(e)
         finally:

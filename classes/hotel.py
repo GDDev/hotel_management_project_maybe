@@ -67,7 +67,8 @@ class Hotel:
             pass
         elif choice == '2':
             guest = Guest.create_new_guest()
-            guest_id, name, last_name, email, phone = Database.insert_guest(db, guest)
+            name, last_name, email, phone = guest
+            guest_id = Database.insert_guest(db, guest)
             guest = Guest(guest_id, name, last_name, email, phone)
         room.checkin_room(guest)
         Database.checkin_room(db, room.room_id)

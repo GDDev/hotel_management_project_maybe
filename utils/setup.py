@@ -33,4 +33,5 @@ def continue_setup():
     print_sleep_clean('Conta criada, agora vamos cadastrar o Hotel', 5)
 
 def finish_setup():
+    system('cls')
     print_sleep_clean('Tudo pronto! Agora você já pode usar o sistema!', 5)

@@ -77,8 +77,8 @@ def create_tables(conn):
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS Checkins (
                 id INTEGER PRIMARY KEY,
-                check_in DATE,
-                check_out DATE,
+                check_in TIMESTAMP,
+                check_out TIMESTAMP,
                 guest_id INTEGER,
                 room_id INTEGER,
                 hotel_id INTEGER,
