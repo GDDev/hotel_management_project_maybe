@@ -68,11 +68,22 @@ def create_tables(conn):
                 middle_name TEXT,
                 last_name TEXT,
                 email TEXT,
-                phone TEXT,
-                check_in_date DATE,
-                check_out_date DATE,
+                phone TEXT
+            )
+        ''')
+
+        # Criando a tabela de Check-In
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS Checkins (
+                id INTEGER PRIMARY KEY,
+                check_in DATE,
+                check_out DATE,
+                guest_id INTEGER,
                 room_id INTEGER,
-                FOREIGN KEY (room_id) REFERENCES Rooms (id)
+                hotel_id INTEGER,
+                FOREIGN KEY (guest_id) REFERENCES Guests (id),
+                FOREIGN KEY (room_id) REFERENCES Rooms (id),
+                FOREIGN KEY (hotel_id) REFERENCES Hotels (id)
             )
         ''')
 
