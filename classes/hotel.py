@@ -1,6 +1,7 @@
 from data.database import Database
 from os import system
 from classes.room import Room
+from classes.checkin import Checkin
 from utils import menus
 
 # Criando classe para o hotel
@@ -42,6 +43,15 @@ class Hotel:
         hotel = (name, address, city, state, country)
         hotel_id, name, address, city, state, country = Database.insert_hotel(db, hotel)
         return (hotel_id, name, address, city, state, country)
+    
+    def checkin_guest(self, db):
+        # Some function for the guest
+        # Some function for the room
+        checkin = Checkin(guest_id, room_id, self.hotel_id)
+
+    def checkout_guest(self, db):
+        # Probably gonna need the checkin id :)
+        pass
 
     # *** FUNÇÕES DE MANIPULAR O HOTEL ***
 

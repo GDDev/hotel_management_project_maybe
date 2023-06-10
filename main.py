@@ -4,7 +4,7 @@ from classes.hotel import Hotel
 # from classes.guest import Guest 
 # from classes.room import Room
 from classes.admin import Admin
-from classes.receptionist import Receptionist 
+from classes.receptionist import Receptionist
 from utils import menus
 from utils.farewell import random_farewell 
 from utils.login import perform_login 
@@ -51,7 +51,7 @@ def check_in():
             input('Pressione Enter para voltar...')
             os.system('cls')
         elif choice == '2':
-            logged_user.checkin_guest()
+            current_hotel.checkin_guest(DB)
             input('Pressione Enter para voltar...')
             os.system('cls')
         elif choice == '3':
