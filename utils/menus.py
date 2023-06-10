@@ -18,6 +18,12 @@ def checkout_menu():
             '2. Voltar']
     return menu
 
+def guest_checkin_menu():
+    menu = ['Hóspede',
+            '1. Hóspede já cadastrado',
+            '2. Cadastrar novo hóspede']
+    return menu
+
 # Criando menu para gerenciamento do hotel
 def hotel_management_menu():
     system('cls')

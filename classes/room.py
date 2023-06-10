@@ -9,13 +9,14 @@ class RoomType(Enum):
 # Criando classe para os quartos
 class Room:
     # Definindo os atributos padrão dos quartos
-    def __init__(self, number, room_type, capacity, price, hotel_id):
+    def __init__(self, id, number, room_type, capacity, price, hotel_id, is_occupied=False):
+        self.room_id = id
         self.number = number
         self.type = room_type
         self.capacity = capacity
         self.price = price
         self.guest = None
-        self.is_occupied = False
+        self.is_occupied = is_occupied
         self.hotel = hotel_id
 
         if not isinstance(self.type, RoomType):
@@ -34,10 +35,9 @@ class Room:
                     break 
             room_capacity = input('Informe a capacidade do quarto: ')
             int_capacity = int(room_capacity)
-            room_price = input('Informe o preço - por noite - do quarto: R$')
+            room_price = input('Informe o preço - por noite - do quarto: R$ ')
             float_price = float(room_price)
-            room = Room(room_number, room_type, int_capacity, float_price, hotel.hotel_id)
-            return room
+            return (room_number, room_type, int_capacity, float_price, False, hotel.hotel_id)
         else:
             print(f'Quarto {room_number} já existe.')
 

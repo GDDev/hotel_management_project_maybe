@@ -21,14 +21,14 @@ def login():
     password = input('Senha: ')
 
     # Chamando a função de validação do login
-    *_, db_role = perform_login(DB, username, password)
+    user_id, username, password, role, hotel_id = perform_login(DB, username, password, current_hotel.hotel_id)
         
     # Definindo o tipo de usuário logado
     os.system('cls')
-    if db_role == 'admin':
-        return Admin(username, password)
-    elif db_role == 'receptionist':
-        return Receptionist(username, password)
+    if role == 'admin':
+        return Admin(user_id, username, password, role, hotel_id)
+    elif role == 'receptionist':
+        return Receptionist(user_id, username, password, role, hotel_id)
 
 def choose_hotel():
     os.system('cls')
@@ -36,26 +36,44 @@ def choose_hotel():
     choice = input('Escolha um hotel: ')
     int_choice = int(choice)
     if int_choice in range(1, len(hotels) + 1):
-        hotel_id, name, address, city, state, country = hotels[int_choice - 1]
+        chosen_hotel = hotels[int_choice - 1]
         os.system('cls')
-        return (hotel_id, name, address, city, state, country)
+        return chosen_hotel
     else:
         raise custom_exceptions.InvalidChoiceError('Hotel inválido.')
+
+def choose_room():
+    os.system('cls')
+    rooms = current_hotel.rooms
+    current_hotel.display_all_rooms()
+    choice = input('Escolha o quarto: ')
+    int_choice = int(choice)
+    if int_choice in range(1, len(rooms) + 1):
+        chosen_room = rooms[int_choice - 1]
+        os.system('cls')
+        return chosen_room
+    else:
+        raise custom_exceptions.InvalidChoiceError('Quarto inválido.')
     
 def check_in():
-    while True:
-        # Chamando o menu e recebendo a opção escolhida
-        choice = menus.menu(menus.checkin_menu)
-        if choice == '1':
-            current_hotel.display_all_rooms()
-            input('Pressione Enter para voltar...')
-            os.system('cls')
-        elif choice == '2':
-            current_hotel.checkin_guest(DB)
-            input('Pressione Enter para voltar...')
-            os.system('cls')
-        elif choice == '3':
-            break
+    try:
+        while True:
+            # Chamando o menu e recebendo a opção escolhida
+            choice = menus.menu(menus.checkin_menu)
+            if choice == '1':
+                current_hotel.display_all_rooms()
+                input('Pressione Enter para voltar...')
+                os.system('cls')
+            elif choice == '2':
+                room = choose_room()
+                current_hotel.checkin_guest(DB, room)
+                input('Pressione Enter para voltar...')
+                os.system('cls')
+            elif choice == '3':
+                break
+    except custom_exceptions.InvalidChoiceError as e:
+        print(e)
+        input('Pressione Enter para voltar...')
 
 def check_out():
     while True:
@@ -70,26 +88,30 @@ def check_out():
 
 def hotel_management():
     while True:
-        # Chamando o menu e recebendo a opção escolhida
-        choice = menus.menu(menus.hotel_management_menu)
-        if choice == '1':
-            Hotel.display_hotels(DB)
+        try:
+            # Chamando o menu e recebendo a opção escolhida
+            choice = menus.menu(menus.hotel_management_menu)
+            if choice == '1':
+                Hotel.display_hotels(DB)
+                input('Pressione Enter para voltar...')
+                os.system('cls')
+            elif choice == '2':
+                Hotel.create_new_hotel(DB)
+                input('Pressione Enter para voltar...')
+                os.system('cls')
+            elif choice == '3':
+                current_hotel.update_hotel_info(DB)
+                input('Pressione Enter para voltar...')
+                os.system('cls')
+            elif choice == '4':
+                Hotel.delete_hotel(DB)
+                input('Pressione Enter para voltar...')
+                os.system('cls')
+            elif choice == '5':
+                break
+        except custom_exceptions.InvalidChoiceError as e:
+            print(e)
             input('Pressione Enter para voltar...')
-            os.system('cls')
-        elif choice == '2':
-            Hotel.create_new_hotel(DB)
-            input('Pressione Enter para voltar...')
-            os.system('cls')
-        elif choice == '3':
-            current_hotel.update_hotel_info(DB)
-            input('Pressione Enter para voltar...')
-            os.system('cls')
-        elif choice == '4':
-            Hotel.delete_hotel(DB)
-            input('Pressione Enter para voltar...')
-            os.system('cls')
-        elif choice == '5':
-            break
 
 # Função para gerenciamento de funcionários
 def staff_management():
@@ -138,6 +160,7 @@ def main():
                     break
             except custom_exceptions.InvalidChoiceError as e:
                 print(e)
+                input('Pressione Enter para encerrar...')
         else:
             try:
                 # Chamando o menu e recebendo a opção escolhida
@@ -157,20 +180,19 @@ def main():
                     break
             except custom_exceptions.InvalidChoiceError as e:
                 print(e)
+                input('Pressione Enter para encerrar...')
 
 # Iniciando o programa
 if __name__ == '__main__':
     try:
         if not os.path.isfile('hotel.db'):
             # Executando a função de inicialização do bd
-            username, password = DB.initialize()
-            hotel_id, name, address, city, state, country = Hotel.create_new_hotel(DB)
-            current_hotel = Hotel(hotel_id, name, address, city, state, country)
-            logged_user = Admin(username, password)
+            user_id, username, password, hotel_id, hotel = DB.initialize(Hotel.create_new_hotel)
+            current_hotel = hotel
+            logged_user = Admin(user_id, username, password, current_hotel.hotel_id)
         else:
             # Executando o login
-            hotel_id, name, address, city, state, country = choose_hotel()
-            current_hotel = Hotel(hotel_id, name, address, city, state, country)
+            current_hotel = choose_hotel()
             logged_user = login()
         # Executando o programa
         main()

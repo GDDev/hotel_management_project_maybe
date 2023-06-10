@@ -1,7 +1,8 @@
 from data.database import Database
 from os import system
-from classes.room import Room
+from classes.room import Room, RoomType
 from classes.checkin import Checkin
+from classes.guest import Guest
 from utils import menus
 
 # Criando classe para o hotel
@@ -9,13 +10,28 @@ class Hotel:
     def load_rooms(self):
         db = Database('hotel.db')
         rooms = Database.get_hotel_rooms(db, self.hotel_id)
-        return rooms
+        rooms_class = []
+        for room in rooms:
+            room_id, number, room_type, capacity, price, is_occupied, hotel_id = room
+            is_occupied = False if is_occupied == 0 else True
+            for type in RoomType:
+                    room_type = type if room_type == type.value else room_type
+            room_class = Room(room_id, number, room_type, capacity, price, hotel_id, is_occupied)
+            rooms_class.append(room_class)
+        return rooms_class
+
+    def load_staff(self):
+        return []
+    
+    def load_guests(self):
+        return []
 
     # Definindo atributos iniciais
     def __init__(self, id, name, address, city, state, country):
         self.hotel_id = id
         self.rooms = self.load_rooms()
-        self.staff = []
+        self.staff = self.load_staff()
+        self.guests = self.load_guests()
         self.name = name
         self.address = address
         self.city = city
@@ -27,7 +43,8 @@ class Hotel:
     def add_room(self, db):
         hotel = self
         room = Room.create_new_room(hotel)
-        Database.insert_room(db, room)
+        room_id, number, type, capacity, price, is_occupied, hotel_id = Database.insert_room(db, room)
+        room = Room(room_id, number, type, capacity, price, hotel_id)
         self.rooms.append(room)
 
     def add_employee(self, employee):
@@ -41,15 +58,24 @@ class Hotel:
         country = input('Informe o país do Hotel: ')
 
         hotel = (name, address, city, state, country)
-        hotel_id, name, address, city, state, country = Database.insert_hotel(db, hotel)
-        return (hotel_id, name, address, city, state, country)
+        hotel_id = Database.insert_hotel(db, hotel)
+        return Hotel(hotel_id, name, address, city, state, country)
     
-    def checkin_guest(self, db):
-        # Some function for the guest
-        # Some function for the room
-        checkin = Checkin(guest_id, room_id, self.hotel_id)
+    def checkin_guest(self, db, room):
+        choice = menus.menu(menus.guest_checkin_menu)
+        if choice == '1':
+            pass
+        elif choice == '2':
+            guest = Guest.create_new_guest()
+            guest_id, name, last_name, email, phone = Database.insert_guest(db, guest)
+            guest = Guest(guest_id, name, last_name, email, phone)
+        room.checkin_room(guest)
+        Database.checkin_room(db, room.room_id)
+        date = Checkin.check_in()
+        checkin = (date, guest.guest_id, room.room_id, self.hotel_id)
+        Database.insert_checkin(db, checkin)
 
-    def checkout_guest(self, db):
+    def checkout_guest(self, db, checkin_id):
         # Probably gonna need the checkin id :)
         pass
 
@@ -127,16 +153,21 @@ class Hotel:
 
     def display_hotels(db):
         hotels = Database.get_all_hotels(db)
+        hotel_list_class = []
         for hotel in hotels:
             id, name, address, city, state, country = hotel
-            print(f'{id}. Hotel {name}\n'
-                  f'Localizado em {address}, {city}-{state}, {country}\n')
-        return hotels
+            hotel_class = Hotel(id, name, address, city, state, country)
+            print(f'{hotel_class.hotel_id}. Hotel {hotel_class.name}\n'
+                  f'Localizado em {hotel_class.address}, {hotel_class.city}-{hotel_class.state}, {hotel_class.country}\n')
+            hotel_list_class.append(hotel_class)
+        return hotel_list_class
     
     def display_all_rooms(self):
+        counter = 1
         for room in self.rooms:
-            if room[5] == 0:
-                print(f'Quarto {room[1]}, tipo: {room[2]}, capacidade: {room[3]}, preço por noite: R$ {room[4]:.2f}')
+            if room.is_occupied == False:
+                print(f'{counter}. Quarto {room.number}, tipo: {room.type.value}, capacidade: {room.capacity}, preço por noite: R$ {room.price:.2f}')
+                counter += 1
 
     def display_all_staff(self):
         return self.staff

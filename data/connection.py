@@ -43,7 +43,7 @@ def create_tables(conn):
                 type TEXT CHECK(type IN ('Solteiro', 'Casal', 'Master')),
                 capacity INTEGER,
                 price REAL,
-                available BOOLEAN,
+                is_occupied BOOLEAN,
                 hotel_id INTEGER,
                 FOREIGN KEY (hotel_id) REFERENCES Hotel (id)
             )
@@ -55,7 +55,9 @@ def create_tables(conn):
                 id INTEGER PRIMARY KEY,
                 username TEXT,
                 password TEXT,
-                role TEXT CHECK(role IN ('admin', 'receptionist'))
+                role TEXT CHECK(role IN ('admin', 'receptionist')),
+                hotel_id INTEGER,
+                FOREIGN KEY (hotel_id) REFERENCES Hotels (id)
             )
         ''')
 
@@ -65,7 +67,6 @@ def create_tables(conn):
             CREATE TABLE IF NOT EXISTS Guests (
                 id INTEGER PRIMARY KEY,
                 name TEXT,
-                middle_name TEXT,
                 last_name TEXT,
                 email TEXT,
                 phone TEXT

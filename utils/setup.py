@@ -14,8 +14,8 @@ def setup_admin_user():
     system('cls')
     return (username, password, 'admin')
 
-def setup_hotel():
-    pass
+def setup_hotel(db, function_hotel):
+    return function_hotel(db)
 
 def print_sleep_clean(message, time):
     print(message)
@@ -28,3 +28,9 @@ def greetings():
     print_sleep_clean('Vejo que é a sua primeira vez acessando nossa aplicação, bem-vindo!', 5)
     print_sleep_clean('Permita-me ajudar com a configuração do sistema...', 5)
     print_sleep_clean('Primeiro, vamos criar uma conta', 5)
+
+def continue_setup():
+    print_sleep_clean('Conta criada, agora vamos cadastrar o Hotel', 5)
+
+def finish_setup():
+    print_sleep_clean('Tudo pronto! Agora você já pode usar o sistema!', 5)

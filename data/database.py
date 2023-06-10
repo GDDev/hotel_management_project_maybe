@@ -11,8 +11,6 @@ class Database:
         self.db_name = db_name
         # Definindo a conexão como fechada
         self.connection = None
-        # Definindo o usuário como padrão
-        self.is_admin = False
 
     # *** FUNÇÕES DE CONEXÃO ***
 
@@ -33,27 +31,28 @@ class Database:
 
     # Inserindo um usuário ADMIN inicial
     def insert_admin_user(self):
-        # Criando a query de comando
-        query = 'INSERT INTO users (username, password, role) VALUES (?, ?, ?)'
-        # Definindo as variáveis
-        username, password, role = stp.setup_admin_user()
-        # Chamando o método de encriptação da senha
-        hashed_password = self.hash_password(password)
-        # Atribuindo as variáveis aos placeholders da query
-        values = (username, hashed_password, role)
         try:
+            hotel_id = 1
+            # Criando a query de comando
+            query = 'INSERT INTO Users (username, password, role, hotel_id) VALUES (?, ?, ?, ?)'
+            # Definindo as variáveis
+            username, password, role = stp.setup_admin_user()
+            # Chamando o método de encriptação da senha
+            hashed_password = self.hash_password(password)
+            # Atribuindo as variáveis aos placeholders da query
+            values = (username, hashed_password, role, hotel_id)
             # Criando o executor de comandos
             cursor = self.connection.cursor()
             # Executando a query
             cursor.execute(query, values)
             # Confirmando as alterações
             self.connection.commit()
+            cursor.execute('SELECT id FROM Users ORDER BY id DESC LIMIT 1')
+            user_id = cursor.fetchone()
+            cursor.close()
+            return (user_id, username, password, hotel_id)
         except sqlite3.Error as e:
-            print(e)
-        finally:
-            if cursor:
-                cursor.close()
-            return username, password
+            print(e)              
         
     # Função para inserir um novo usuário
     def insert_user(self, username, password, role = 'receptionist'):
@@ -61,7 +60,7 @@ class Database:
             # Criando o executor
             cursor = self.connection.cursor()
             # Criando a query de inserção
-            query = 'INSERT INTO users (username, password, role) VALUES (?, ?, ?)'
+            query = 'INSERT INTO Users (username, password, role) VALUES (?, ?, ?)'
             # Encriptação da senha
             hashed_password = self.hash_password(password)
             values = (username, hashed_password, role)
@@ -94,9 +93,9 @@ class Database:
             self.connection.commit()
             cursor.execute('SELECT id FROM Hotels ORDER BY id DESC LIMIT 1')
             hotel_id = cursor.fetchone()
-            return (hotel_id, name, address, city, state, country)
-            # Encerramento do executor
             cursor.close()
+            return hotel_id[0]
+            # Encerramento do executor
         except sqlite3.Error as e:
             print(e)
         finally:
@@ -108,11 +107,53 @@ class Database:
         try:
             self.connect()
             cursor = self.connection.cursor()
-            query = 'INSERT INTO Rooms (number, type, capacity, price, available, hotel_id) VALUES (?, ?, ?, ?, ?, ?)'
-            values = (room.number, room.type.value, room.capacity, room.price, room.is_occupied, room.hotel)
+            query = 'INSERT INTO Rooms (number, type, capacity, price, is_occupied, hotel_id) VALUES (?, ?, ?, ?, ?, ?)'
+            number, type, capacity, price, is_occupied, hotel_id = room
+            values = (number, type.value, capacity, price, is_occupied, hotel_id)
             cursor.execute(query, values)
             self.connection.commit()
+            cursor.execute('SELECT id FROM Rooms ORDER BY id DESC LIMIT 1')
+            room_id = cursor.fetchone()
             cursor.close()
+            return (room_id[0], number, type, capacity, price, is_occupied, hotel_id)
+        except sqlite3.Error as e:
+            print(e)
+        finally:
+            if self.connection:
+                self.disconnect()
+
+    def insert_guest(self, guest):
+        try:
+            self.connect()
+            cursor = self.connection.cursor()
+            query = 'INSERT INTO Guests (name, last_name, email, phone) VALUES (?, ?, ?, ?)'
+            name, last_name, email, phone = guest
+            values = (name, last_name, email, phone)
+            cursor.execute(query, values)
+            self.connection.commit()
+            cursor.execute('SELECT id FROM Guests ORDER BY id DESC LIMIT 1')
+            guest_id = cursor.fetchone()
+            cursor.close()
+            return (guest_id[0], name, last_name, email, phone)
+        except sqlite3.Error as e:
+            print(e)
+        finally:
+            if self.connection:
+                self.disconnect()
+
+    def insert_checkin(self, checkin):
+        try:
+            self.connect()
+            cursor = self.connection.cursor()
+            query = 'INSERT INTO Checkins (check_in, check_out, guest_id, room_id, hotel_id) VALUES (?, ?, ?, ?, ?)'
+            check_in_date, guest_id, room_id, hotel_id = checkin
+            values = (check_in_date, None, guest_id, room_id, hotel_id)
+            cursor.execute(query, values)
+            self.connection.commit()
+            cursor.execute('SELECT id FROM Checkins ORDER BY id DESC LIMIT 1')
+            checkin_id = cursor.fetchone()
+            cursor.close()
+            return checkin_id[0]
         except sqlite3.Error as e:
             print(e)
         finally:
@@ -140,7 +181,7 @@ class Database:
 
 
     # Criando função para inicializar o banco de dados
-    def initialize(self):
+    def initialize(self, function):
         # Criando conexão
         self.connect()
         # Criando as tabelas
@@ -148,15 +189,18 @@ class Database:
         # Chamando função de boas-vindas
         stp.greetings()
         # Criando um usuário padrão
-        username, password = self.insert_admin_user()
+        user_id, username, password, hotel_id = self.insert_admin_user()
+        stp.continue_setup()
+        hotel = stp.setup_hotel(self, function)
+        stp.finish_setup()
         # Fechando a conexão
         self.disconnect()
-        return (username, password)
+        return (user_id, username, password, hotel_id, hotel)
 
     # *** FUNÇÕES DE RECUPERAÇÃO DE OBJETOS ***
 
     # Criando função para recuperar todos os usuários do db
-    def get_all_users(self):
+    def get_hotel_staff(self, hotel_id):
         # Conectando com o db
         self.connect()
         # Criando uma variável para armazenar os usuários
@@ -165,7 +209,9 @@ class Database:
             # Criando o executor
             cursor = self.connection.cursor()
             # Executando a busca pelos usuários
-            cursor.execute('SELECT * FROM Users')
+            query = 'SELECT * FROM Users WHERE hotel_id == ?'
+            value = str(hotel_id)
+            cursor.execute(query, value)
             # Armazenando o resultado na variável
             users = cursor.fetchall()
             # Encerrando o executor
@@ -236,14 +282,29 @@ class Database:
     def update_hotel(self, id, *args):
         try:
             name, address, city, state, country = args
-            query = 'UPDATE Hotels SET name = ?, address = ?, city = ?, state = ?, country = ?'
-            db_id, db_name, db_addr, db_city, db_state, db_ctr = self.get_hotel(id)
+            query = 'UPDATE Hotels SET name = ?, address = ?, city = ?, state = ?, country = ? WHERE id == ?'
+            _, db_name, db_addr, db_city, db_state, db_ctr = self.get_hotel(id)
             if name != db_name: db_name = name
             if address != db_addr: db_addr =  address
             if city != db_city: db_city = city
             if state != db_state: db_state = state
             if country != db_ctr: db_ctr = country
-            values = (db_name, db_addr, db_city, db_state, db_ctr)
+            values = (db_name, db_addr, db_city, db_state, db_ctr, id)
+            self.connect()
+            cursor = self.connection.cursor()
+            cursor.execute(query, values)
+            self.connection.commit()
+            cursor.close()
+        except sqlite3.Error as e:
+            print(e)
+        finally:
+            if self.connection:
+                self.disconnect()
+
+    def checkin_room(self, room_id):
+        try:
+            query = 'UPDATE Rooms SET is_occupied = ? WHERE id == ?'
+            values = (True, room_id)
             self.connect()
             cursor = self.connection.cursor()
             cursor.execute(query, values)
