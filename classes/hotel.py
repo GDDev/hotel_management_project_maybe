@@ -70,11 +70,13 @@ class Hotel:
             name, last_name, email, phone = guest
             guest_id = Database.insert_guest(db, guest)
             guest = Guest(guest_id, name, last_name, email, phone)
+        
+        date = Checkin.check_in()
+        date = date.strftime("%Y-%m-%d %H:%M:%S")
+        checkin = (date, guest.guest_id[0], room.room_id, self.hotel_id)
+        Database.insert_checkin(db, checkin)
         room.checkin_room(guest)
         Database.checkin_room(db, room.room_id)
-        date = Checkin.check_in()
-        checkin = (date, guest.guest_id, room.room_id, self.hotel_id)
-        Database.insert_checkin(db, checkin)
 
     def checkout_guest(self, db, checkin_id):
         # Probably gonna need the checkin id :)
