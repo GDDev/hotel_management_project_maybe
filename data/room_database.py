@@ -41,6 +41,22 @@ class RoomDatabase(Database):
         finally:
             if self.connection:
                 self.disconnect()
+
+    def get_room_by_id(self, room_id):
+        try:
+            self.connect()
+            cursor = self.connection.cursor()
+            query = 'SELECT * FROM Rooms WHERE id == ?'
+            value = str(room_id)
+            cursor.execute(query, value)
+            room = cursor.fetchone()
+            cursor.close()
+            return room
+        except sqlite3.Error as e:
+            print(e)
+        finally:
+            if self.connection:
+                self.disconnect()
     
     def checkin_room(self, room_id):
         try:

@@ -2,11 +2,11 @@
 from globals import db_name
 from os import system, path
 from classes.hotel import Hotel
-# from classes.guest import Guest 
+from classes.guest import Guest 
 from classes.room import Room
 from classes.user import User, Admin
 from data.database import Database
-from utils.menus import admin_menu, checkin_menu, checkout_menu, guest_checkin_menu, hotel_management_menu, main_menu, menu, staff_management_menu, update_hotel_menu
+from utils.menus import admin_menu, checkin_menu, checkout_menu, guest_checkin_menu, hotel_management_menu, main_menu, menu, staff_management_menu, update_hotel_menu, guests_menus, guest_management_menu
 from utils.farewell import random_farewell 
 from utils import custom_exceptions
     
@@ -90,6 +90,7 @@ def hotel_management():
 # Função para gerenciamento de funcionários
 def staff_management():
     while True:
+        system('cls')
         try:
             # Chamando o menu e recebendo a opção escolhida
             choice = menu(staff_management_menu)
@@ -107,6 +108,46 @@ def staff_management():
             pass
         except AttributeError as e:
             print('Função não implementada.')
+            input('Pressione Enter para voltar...')
+        except custom_exceptions.InvalidChoiceError as e:
+            print(e)
+            input('Pressione Enter para voltar...')
+
+def guests_management():
+    while True:
+        try:
+            system('cls')
+            # Chamando o menu e recebendo a opção escolhida
+            choice = menu(guests_menus)
+            if choice == '1':
+                guests = current_hotel.display_all_guests()
+                choice = input('informe o ID do hóspede: ')
+                int_choice = int(choice)
+                for guest in guests:
+                    if guest.guest_id == int_choice:
+                        chosen_guest = guest                
+            elif choice == '2':
+                raise AttributeError()
+                input('Pressione Enter para voltar...')
+                system('cls')
+            elif choice == '3':
+                break
+            if chosen_guest:
+                    system('cls')
+                    choice = menu(guest_management_menu)
+                    if choice == '1':
+                        chosen_guest.display_guest_info()
+                    elif choice == '2':
+                        chosen_guest.edit_guest_info()
+                    elif choice == '3':
+                        chosen_guest.delete_guest(current_hotel)
+                    elif choice == '4':
+                        break
+        except ValueError as e:
+            print(e)
+        except AttributeError as e:
+            print('Função não implementada.')
+            print(e)
             input('Pressione Enter para voltar...')
         except custom_exceptions.InvalidChoiceError as e:
             print(e)
@@ -132,7 +173,7 @@ def main():
                     input('Pressione Enter para voltar...')
                     system('cls')
                 elif choice == '4':
-                    logged_user.display_occupied_room_info()
+                    guests_management()
                 elif choice == '5':
                     hotel_management()
                 elif choice == '6':

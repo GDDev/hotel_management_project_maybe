@@ -21,7 +21,8 @@ def checkout_menu():
 def guest_checkin_menu():
     menu = ['Hóspede',
             '1. Hóspede já cadastrado',
-            '2. Cadastrar novo hóspede']
+            '2. Cadastrar novo hóspede',
+            '3. Voltar']
     return menu
 
 # Criando menu para gerenciamento do hotel
@@ -74,6 +75,21 @@ def update_hotel_menu():
             '2. Adicionar funcionário', 
             '3. Editar Hotel', 
             '4. Voltar']
+    return menu
+
+def guests_menus():
+    menu = ['Hóspedes',
+            '1. Ver todos os hóspedes',
+            '2. Encontrar hóspede',
+            '3. Voltar.']
+    return menu
+
+def guest_management_menu():
+    menu = ['Gerenciar hóspede',
+            '1. Mostrar informações completas',
+            '2. Atualizar informações',
+            '3. Excluir hóspede',
+            '4. Voltar.']
     return menu
 
 # Criando função para exibir o menu escolhido

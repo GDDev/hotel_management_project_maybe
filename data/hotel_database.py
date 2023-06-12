@@ -69,6 +69,22 @@ class HotelDatabase(Database):
                 self.disconnect()
         return hotels
     
+    def get_hotel_by_id(self, hotel_id):
+        try:
+            self.connect()
+            cursor = self.connection.cursor()
+            query = 'SELECT * FROM Hotels WHERE id == ?'
+            value = str(hotel_id)
+            cursor.execute(query, value)
+            hotel = cursor.fetchone()
+            cursor.close()
+            return hotel
+        except sqlite3.Error as e:
+            print(e)
+        finally:
+            if self.connection:
+                self.disconnect()
+    
     def update_hotel(self, hotel):
         try:
             query = 'UPDATE Hotels SET name = ?, address = ?, city = ?, state = ?, country = ? WHERE id == ?'
@@ -99,7 +115,6 @@ class HotelDatabase(Database):
             cursor.execute(query, value)
             self.connection.commit()
             cursor.close()
-            pass
         except sqlite3.Error as e:
             print(e)
         finally:

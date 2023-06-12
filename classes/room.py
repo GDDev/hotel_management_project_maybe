@@ -63,6 +63,15 @@ class Room:
             room_list.append(room_class)
         return room_list
 
+    def get_room(room_id):
+        room = DB.get_room_by_id(room_id)
+        room_id, number, room_type, capacity, price, is_occupied, hotel_id = room
+        is_occupied = False if is_occupied == 0 else True
+        for type in RoomType:
+            room_type = type if room_type == type.value else room_type
+        room = Room(room_id, number, room_type, capacity, price, hotel_id, is_occupied)
+        return room
+
     def checkin_room(self):
         self.is_occupied = True
         DB.checkin_room(self.room_id)

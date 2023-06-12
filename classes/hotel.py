@@ -34,6 +34,9 @@ class Hotel:
         self.state = state
         self.country = country    
     
+    def remove_guest(self, guest):
+        self.guests.remove(guest)
+
     # *** FUNÇÕES DE ADICIONAR OBJETOS ***
 
     def add_room(self):
@@ -64,7 +67,8 @@ class Hotel:
                 choice = '2'
         if choice == '2':
             guest = Guest.create_guest()
-        check_in = CheckIn.check_in(CheckIn, guest.guest_id, room.room_id, self.hotel_id)
+            self.guests.append(guest)
+        CheckIn.check_in(CheckIn, guest.guest_id, room.room_id, self.hotel_id)
         room.checkin_room()
         print('Check-in realizado com sucesso!')
 
@@ -174,6 +178,17 @@ class Hotel:
                   f'Localizado em {hotel_class.address}, {hotel_class.city}-{hotel_class.state}, {hotel_class.country}\n')
             hotel_list_class.append(hotel_class)
         return hotel_list_class
+    
+    def get_hotel_by_id(hotel_id):
+        hotel = DB.get_hotel_by_id(hotel_id)
+        hotel_id, name, address, city, state, country = hotel
+        hotel = Hotel(hotel_id, name, address, city, state, country)
+        return hotel
+    
+    def display_all_guests(self):
+        for guest in self.guests:
+            print(f'{guest.guest_id}. {guest.name} {guest.last_name}')
+        return self.guests
 
     def display_all_staff(self):
         return self.staff
