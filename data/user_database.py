@@ -56,7 +56,7 @@ class UserDatabase (Database):
                 self.connection.close()
 
     # Criando função para recuperar todos os usuários do db
-    def get_hotel_staff(self, hotel_id):
+    def get_hotel_staff(self):
         # Criando uma variável para armazenar os usuários
         users = []
         try:
@@ -65,9 +65,7 @@ class UserDatabase (Database):
             # Criando o executor
             cursor = self.connection.cursor()
             # Executando a busca pelos usuários
-            query = 'SELECT * FROM Users WHERE hotel_id == ?'
-            value = str(hotel_id)
-            cursor.execute(query, value)
+            cursor.execute('SELECT * FROM Users')
             # Armazenando o resultado na variável
             users = cursor.fetchall()
             # Encerrando o executor

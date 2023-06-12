@@ -1,4 +1,5 @@
 # Importando tudo o que vai usar
+from data.hotel_database import HotelDatabase
 from globals import db_name
 from os import system, path
 from classes.hotel import Hotel
@@ -116,7 +117,7 @@ def staff_management():
                         break
                     input('\nPressione Enter para voltar...')
             elif choice == '3':
-                user_list = User.get_all_users(current_hotel.hotel_id)
+                user_list = User.get_all_users()
                 for user in user_list:
                     print(f'{user.user_id}. {user.name} {user.last_name} ({user.username})')
                 input('\nPressione Enter para voltar...')
@@ -235,22 +236,25 @@ def main():
             print(e)
             input('Pressione Enter para voltar...')
 
-DB = Database(db_name)
-
 # Iniciando o programa
 if __name__ == '__main__':
     try:
         if not path.isfile('hotel.db'):
+            DB = Database(db_name)
             # Executando a função de inicialização do bd
             user, hotel = DB.initialize(Hotel.create_hotel, User.create_user)
             current_hotel = hotel
             logged_user = user
         else:
+            DB = HotelDatabase(db_name)
             # Executando o login
-            # current_hotel = Hotel.choose_hotel()
-            # logged_user = User.perform_login(User, current_hotel.hotel_id)
-            current_hotel = Hotel(1, 'Hotel', 'Rua', 'Cidade', 'Estado', 'País')
-            logged_user = Admin(1, 'Jorge', 'Inho', 'email', 'god', '1', 'admin', 1)
+            hotels = DB.get_all_hotels()
+            if len(hotels) > 1:
+                current_hotel = Hotel.choose_hotel()
+            else:
+                hotel_id, name, address, city, state, country = hotels[0]
+                current_hotel = Hotel(hotel_id, name, address, city, state, country)
+            logged_user = User.perform_login(User)
         # Executando o programa
         main()
     except custom_exceptions.LoginError as e:

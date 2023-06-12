@@ -17,7 +17,7 @@ class Hotel:
         return Room.get_all_rooms(self.hotel_id)
 
     def load_staff(self):
-        return User.get_all_users(self.hotel_id)
+        return User.get_all_users()
     
     def load_guests(self):
         return Guest.get_all_guests()

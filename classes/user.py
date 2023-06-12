@@ -44,9 +44,9 @@ class User:
             user = Receptionist(user_id, name, last_name, email, username, password, role, hotel_id)
         return user
 
-    def get_all_users(hotel_id):
+    def get_all_users():
         user_list = []
-        users = DB.get_hotel_staff(hotel_id)
+        users = DB.get_hotel_staff()
         for user in users:
             user_id, name, last_name, email, username, password, role, hotel = user
             if role == 'admin':
@@ -119,9 +119,9 @@ class User:
         hotel.remove_employee(self)
     
     # Definindo a função de validação de login
-    def perform_login(self, hotel_id):
+    def perform_login(self):
         # Buscando os usuários registrados no banco de dados
-        users = self.get_all_users(hotel_id)
+        users = self.get_all_users()
 
         # Lendo as credenciais do usuário
         username = input('Usuário: ')
