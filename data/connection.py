@@ -5,7 +5,7 @@ def create_connection(db_name):
     conn = None
     try:
         # Conectando com o db hotel.db
-        conn = sqlite3.connect('hotel.db')
+        conn = sqlite3.connect(db_name)
         return conn
     except sqlite3.Error as e:
         print(e)
@@ -53,6 +53,9 @@ def create_tables(conn):
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS Users (
                 id INTEGER PRIMARY KEY,
+                name TEXT,
+                last_name TEXT,
+                email TEXT, 
                 username TEXT,
                 password TEXT,
                 role TEXT CHECK(role IN ('admin', 'receptionist')),

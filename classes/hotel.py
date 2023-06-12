@@ -1,30 +1,26 @@
-from data.database import Database
+from globals import db_name
 from os import system
-from classes.room import Room, RoomType
-from classes.checkin import Checkin
+from classes.room import Room
+from classes.checkin import CheckIn
 from classes.guest import Guest
+from classes.user import User
+from data.hotel_database import HotelDatabase
 from utils import menus
+from utils import custom_exceptions
+
+DB = HotelDatabase(db_name)
 
 # Criando classe para o hotel
 class Hotel:
+
     def load_rooms(self):
-        db = Database('hotel.db')
-        rooms = Database.get_hotel_rooms(db, self.hotel_id)
-        rooms_class = []
-        for room in rooms:
-            room_id, number, room_type, capacity, price, is_occupied, hotel_id = room
-            is_occupied = False if is_occupied == 0 else True
-            for type in RoomType:
-                    room_type = type if room_type == type.value else room_type
-            room_class = Room(room_id, number, room_type, capacity, price, hotel_id, is_occupied)
-            rooms_class.append(room_class)
-        return rooms_class
+        return Room.get_all_rooms(self.hotel_id)
 
     def load_staff(self):
-        return []
+        return User.get_all_users(self.hotel_id)
     
     def load_guests(self):
-        return []
+        return Guest.get_all_guests()
 
     # Definindo atributos iniciais
     def __init__(self, id, name, address, city, state, country):
@@ -40,17 +36,15 @@ class Hotel:
     
     # *** FUNÇÕES DE ADICIONAR OBJETOS ***
 
-    def add_room(self, db):
-        hotel = self
-        room = Room.create_new_room(hotel)
-        room_id, number, type, capacity, price, is_occupied, hotel_id = Database.insert_room(db, room)
-        room = Room(room_id, number, type, capacity, price, hotel_id)
+    def add_room(self):
+        room = Room.create_room(Room, self.hotel_id)
         self.rooms.append(room)
 
-    def add_employee(self, employee):
-        self.staff.append(employee)
+    def add_employee(self):
+        user = User.create_user(self.hotel_id)
+        self.staff.append(user)
 
-    def create_new_hotel(db):
+    def create_hotel():
         name = input('Informe o nome do Hotel: ')
         address = input('Informe a rua do Hotel: ')
         city = input('Informe a cidade do Hotel: ')
@@ -58,33 +52,51 @@ class Hotel:
         country = input('Informe o país do Hotel: ')
 
         hotel = (name, address, city, state, country)
-        hotel_id = Database.insert_hotel(db, hotel)
+        hotel_id = DB.insert_hotel(hotel)
         return Hotel(hotel_id, name, address, city, state, country)
     
-    def checkin_guest(self, db, room):
+    def checkin_guest(self, room):
         choice = menus.menu(menus.guest_checkin_menu)
         if choice == '1':
-            pass
-        elif choice == '2':
-            guest = Guest.create_new_guest()
-            name, last_name, email, phone = guest
-            guest_id = Database.insert_guest(db, guest)
-            guest = Guest(guest_id, name, last_name, email, phone)
-        
-        date = Checkin.check_in()
-        date = date.strftime("%Y-%m-%d %H:%M:%S")
-        checkin = (date, guest.guest_id[0], room.room_id, self.hotel_id)
-        Database.insert_checkin(db, checkin)
-        room.checkin_room(guest)
-        Database.checkin_room(db, room.room_id)
+            guest_list = Guest.get_all_guests()
+            if guest_list:
+                for gst in guest_list:
+                    print(f'{gst.name} {gst.last_name} - ID: {gst.guest_id}')
+            else:
+                print('Nenhum hóspede cadastrado.')
+            guest = Guest.get_guest_by_name()
+            if not guest:
+                print('Nenhum hóspede correspondente à pesquisa.')
+                choice = '2'
+        if choice == '2':
+            guest = Guest.create_guest()
+        check_in = CheckIn.check_in(CheckIn, guest.guest_id, room.room_id, self.hotel_id)
+        room.checkin_room()
+        print('Check-in realizado com sucesso!')
 
-    def checkout_guest(self, db, checkin_id):
-        # Probably gonna need the checkin id :)
-        pass
+    def checkout_guest(self):
+        checkins = CheckIn.get_open_checkins(CheckIn, self.hotel_id)
+        rooms = Room.display_occupied_rooms(Room, self.hotel_id)
+        if rooms:
+            choice = input('Informe o número do quarto para realizar o check-out: ')
+            int_choice = int(choice)
+            for room in rooms:
+                if int_choice == room.number:
+                    chosen_room = room
+                    for checkin in checkins:
+                        if checkin.room_id == chosen_room.room_id:
+                            check = checkin
+                            debt = chosen_room.checkout_room()
+                            nights = check.check_out()
+                            debt = CheckIn.calculate_debt(nights, debt)
+                            print(f'Total a cobrar: R$ {debt:.2f}\n')
+        else:
+            print('Nenhum quarto está ocupado no momento.\n')
+
 
     # *** FUNÇÕES DE MANIPULAR O HOTEL ***
 
-    def edit_hotel_info(self, db):
+    def edit_hotel_info(self):
         def change_hotel_name():
             name = input('Informe o novo nome do Hotel: ')
             return name
@@ -116,6 +128,7 @@ class Hotel:
         choice = input('Selecione uma opção: ')
         # Vendo se o usuário digitou uma opção válida
         if int(choice) in range(1, length):
+            system('cls')
             if choice == '1':
                 self.name = change_hotel_name()
             elif choice == '2':
@@ -126,36 +139,39 @@ class Hotel:
                 self.state = change_hotel_state()
             elif choice == '5':
                 self.country = change_hotel_country()
-            Database.update_hotel(db, self.hotel_id, self.name, self.address, self.city, self.state, self.country)
+            DB.update_hotel(self)
         else:
             print('Opção inválida')
         
-    def update_hotel_info(self, db):
+    def update_hotel_info(self):
         system('cls')
         print('Hotéis')
         choice = menus.menu(menus.update_hotel_menu)
         if choice == '1':
-            self.add_room(db)
+            self.add_room()
         elif choice == '2':
             pass
         elif choice == '3':
-            self.edit_hotel_info(db)
+            self.edit_hotel_info()
         elif choice == '4':
             return
 
-    def delete_hotel(db):
+    def delete_hotel():
+        if len(DB.get_all_hotels()) == 1:
+            print('Não é possível deletar o único hotel cadastrado.')
+            return
         system('cls')
         print('Hotéis')
-        hotels = Hotel.display_hotels(db)
+        hotels = Hotel.display_hotels()
         choice = input('Qual hotel deseja excluir? ')
         int_choice = int(choice)
         if int_choice in range(1, len(hotels) + 1):
-            Database.exclude_hotel(db, choice)
+            DB.exclude_hotel(choice)
 
     # *** FUNÇÕES DE RECUPERAR OBJETOS ***
 
-    def display_hotels(db):
-        hotels = Database.get_all_hotels(db)
+    def display_hotels():
+        hotels = DB.get_all_hotels()
         hotel_list_class = []
         for hotel in hotels:
             id, name, address, city, state, country = hotel
@@ -164,13 +180,18 @@ class Hotel:
                   f'Localizado em {hotel_class.address}, {hotel_class.city}-{hotel_class.state}, {hotel_class.country}\n')
             hotel_list_class.append(hotel_class)
         return hotel_list_class
-    
-    def display_all_rooms(self):
-        counter = 1
-        for room in self.rooms:
-            if room.is_occupied == False:
-                print(f'{counter}. Quarto {room.number}, tipo: {room.type.value}, capacidade: {room.capacity}, preço por noite: R$ {room.price:.2f}')
-                counter += 1
 
     def display_all_staff(self):
         return self.staff
+    
+    def choose_hotel():
+        system('cls')
+        hotels = Hotel.display_hotels()
+        choice = input('Escolha um hotel: ')
+        int_choice = int(choice)
+        if int_choice in range(1, len(hotels) + 1):
+            chosen_hotel = hotels[int_choice - 1]
+            system('cls')
+            return chosen_hotel
+        else:
+            raise custom_exceptions.InvalidChoiceError('Hotel inválido.')
