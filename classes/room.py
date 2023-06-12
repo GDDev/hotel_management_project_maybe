@@ -103,7 +103,6 @@ class Room:
                     chosen_room = room
                     system('cls')
                     return chosen_room
-                else:
-                    raise InvalidChoiceError('Quarto inválido.')
+            raise InvalidChoiceError('Quarto inválido.')
         except ValueError as e:
             pass

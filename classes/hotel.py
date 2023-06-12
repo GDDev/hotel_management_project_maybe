@@ -58,12 +58,6 @@ class Hotel:
     def checkin_guest(self, room):
         choice = menus.menu(menus.guest_checkin_menu)
         if choice == '1':
-            guest_list = Guest.get_all_guests()
-            if guest_list:
-                for gst in guest_list:
-                    print(f'{gst.name} {gst.last_name} - ID: {gst.guest_id}')
-            else:
-                print('Nenhum hóspede cadastrado.')
             guest = Guest.get_guest_by_name()
             if not guest:
                 print('Nenhum hóspede correspondente à pesquisa.')
