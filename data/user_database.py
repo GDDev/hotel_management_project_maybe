@@ -79,3 +79,71 @@ class UserDatabase (Database):
             if self.connection:
                 # Encerrando a conexão
                 self.connection.close()
+
+    def get_user_by_id(self, user_id, hotel_id):
+        try:
+            self.connect()
+            cursor = self.connection.cursor()
+            query = 'SELECT * FROM Users WHERE id == ? AND hotel_id == ?'
+            values = (str(user_id), str(hotel_id))
+            cursor.execute(query, values)
+            user = cursor.fetchone()
+            cursor.close()
+            return user
+        except sqlite3.Error as e:
+            print(e)
+        finally:
+            if self.connection:
+                self.disconnect()
+
+    def update_user(self, user, hotel_id):
+        try:
+            query = 'UPDATE Users SET name = ?, last_name = ?, email = ?, username = ? WHERE id == ?'
+            _, db_name, db_last_name, db_email, db_username, *_ = self.get_user_by_id(user.user_id, hotel_id)
+            if user.name != db_name: db_name = user.name
+            if user.last_name != db_last_name: db_last_name =  user.last_name
+            if user.email != db_email: db_email = user.email
+            if user.username != db_username: db_username = user.username
+            values = (db_name, db_last_name, db_email, db_username, user.user_id)
+            self.connect()
+            cursor = self.connection.cursor()
+            cursor.execute(query, values)
+            self.connection.commit()
+            cursor.close()
+        except sqlite3.Error as e:
+            print(e)
+        finally:
+            if self.connection:
+                self.disconnect()
+
+    def change_password(self, user_id, new_password):
+        try:
+            self.connect()
+            cursor = self.connection.cursor()
+            query = 'UPDATE Users SET password = ? WHERE id == ?'
+            hashed_password = self.hash_password(new_password)
+            values = (hashed_password, str(user_id))
+            cursor.execute(query, values)
+            self.connection.commit()
+            cursor.close()
+            return hashed_password
+        except sqlite3.Error as e:
+            print(e)
+        finally:
+            if self.connection:
+                self.disconnect()
+
+    def delete_user(self, user_id):
+        try:
+            self.connect()
+            cursor = self.connection.cursor()
+            query = 'DELETE FROM Users WHERE id == ?'
+            value = str(user_id)
+            cursor.execute(query, value)
+            self.connection.commit()
+            cursor.close()
+        except sqlite3.Error as e:
+            print(e)
+        finally:
+            if self.connection:
+                self.disconnect()

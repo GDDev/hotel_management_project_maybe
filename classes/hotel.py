@@ -47,6 +47,9 @@ class Hotel:
         user = User.create_user(self.hotel_id)
         self.staff.append(user)
 
+    def remove_employee(self, employee):
+        self.staff.remove(employee)
+
     def create_hotel():
         name = input('Informe o nome do Hotel: ')
         address = input('Informe a rua do Hotel: ')

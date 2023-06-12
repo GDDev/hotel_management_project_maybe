@@ -92,6 +92,13 @@ def guest_management_menu():
             '4. Voltar.']
     return menu
 
+def user_management_menu():
+    menu = ['',
+            '1. Atualizar funcionário',
+            '2. Alterar senha',
+            '3. Voltar']
+    return menu
+
 # Criando função para exibir o menu escolhido
 def menu(menu_list):
     # Validando a opção escolhida

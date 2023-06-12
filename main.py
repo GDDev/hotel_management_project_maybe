@@ -6,7 +6,7 @@ from classes.guest import Guest
 from classes.room import Room
 from classes.user import User, Admin
 from data.database import Database
-from utils.menus import admin_menu, checkin_menu, checkout_menu, guest_checkin_menu, hotel_management_menu, main_menu, menu, staff_management_menu, update_hotel_menu, guests_menus, guest_management_menu
+from utils.menus import admin_menu, checkin_menu, checkout_menu, guest_checkin_menu, hotel_management_menu, main_menu, menu, staff_management_menu, update_hotel_menu, guests_menus, guest_management_menu, user_management_menu
 from utils.farewell import random_farewell 
 from utils import custom_exceptions
     
@@ -95,19 +95,46 @@ def staff_management():
             # Chamando o menu e recebendo a opção escolhida
             choice = menu(staff_management_menu)
             if choice == '1':
-                logged_user.add_employee()
+                User.create_user(current_hotel.hotel_id)
             elif choice == '2':
-                logged_user.show_employee_info()
+                user_list = current_hotel.staff
+                for user in user_list:
+                    print(f'{user.user_id}. {user.name} {user.last_name} ({user.username})')
+                choice = input('Informe o ID do funcionário desejado: ')
+                int_choice = int(choice)
+                user = User.get_user_by_id(int_choice, current_hotel.hotel_id)
+                if user:
+                    system('cls')
+                    print(f'Nome: {user.name} {user.last_name}\nE-mail: {user.email}')
+                    print(f'Username: {user.username}\nHotel: {current_hotel.name}')
+                    choice = menu(user_management_menu)
+                    if choice == '1':
+                        user.edit_user_info(current_hotel.hotel_id)
+                    elif choice == '2':
+                        user.change_password()
+                    elif choice == '3':
+                        break
+                    input('\nPressione Enter para voltar...')
             elif choice == '3':
-                logged_user.show_staff()
+                user_list = User.get_all_users(current_hotel.hotel_id)
+                for user in user_list:
+                    print(f'{user.user_id}. {user.name} {user.last_name} ({user.username})')
+                input('\nPressione Enter para voltar...')
             elif choice == '4':
-                logged_user.delete_employee()
+                user_list = current_hotel.staff
+                for user in user_list:
+                    print(f'{user.user_id}. {user.name} {user.last_name} ({user.username})')
+                choice = input('Informe o ID do funcionário a ser deletado: ')
+                int_choice = int(choice)
+                user = User.get_user_by_id(int_choice, current_hotel.hotel_id)
+                user.delete_user(current_hotel)
+                input('\nPressione Enter para voltar...')
             elif choice == '5':
                 break
         except ValueError as e:
             pass
         except AttributeError as e:
-            print('Função não implementada.')
+            print(e)
             input('Pressione Enter para voltar...')
         except custom_exceptions.InvalidChoiceError as e:
             print(e)
@@ -127,9 +154,10 @@ def guests_management():
                     if guest.guest_id == int_choice:
                         chosen_guest = guest                
             elif choice == '2':
-                raise AttributeError()
-                input('Pressione Enter para voltar...')
-                system('cls')
+                chosen_guest = Guest.get_guest_by_name()
+                if not chosen_guest:
+                    print('Hóspede não encontrado')
+                    input('Pressione Enter para voltar...')
             elif choice == '3':
                 break
             if chosen_guest:
