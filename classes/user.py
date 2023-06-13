@@ -1,7 +1,13 @@
+from classes.guest import Guest
+# from classes.hotel import Hotel
+from data.user_database import UserDatabase 
 from globals import db_name
 from os import system
-from data.user_database import UserDatabase 
-from utils.custom_exceptions import LoginError
+from utils.custom_exceptions import InvalidChoiceError, InvalidInputError, LoginError
+from utils.farewell import random_farewell
+from utils.menus import menu, staff_management_menu, user_management_menu
+# from utils.menus import 
+from utils.validate_input import validate_email, validate_name, validate_username
 
 DB = UserDatabase(db_name)
 
@@ -19,45 +25,87 @@ class User:
         self.hotel = hotel_id
 
     def create_user(hotel_id):
-        full_name = input('Informe o nome completo do funcionário: ').split(' ')
-        name = full_name[0]
-        last_name = full_name[1:len(full_name)]
-        last_name = ' '.join(last_name)
-        email = input('Informe o e-mail do funcionário: ')
-        username = input('Digite um nome de usuário: ')
         while True:
-            password = input('Digite uma senha: ')
-            confirm_password = input('Confirme sua senha: ')
-            if password == confirm_password:
-                break
-            else:
+            try:
+                full_name = input('Informe o nome completo do funcionário: ')
+                name, last_name = validate_name(full_name)
+                email = input('Informe o e-mail do funcionário: ')
+                validate_email(email)
+                username = input('Digite um nome de usuário: ')
+                validate_username(username)
+                while True:
+                    password = input('Digite uma senha: ')
+                    confirm_password = input('Confirme sua senha: ')
+                    if password == confirm_password:
+                        break
+                    else:
+                        system('cls')
+                        print('As senhas não são iguais.')
+                role = input('Informe o tipo de usuário (ENTER para recepcionista): ')
+                role = 'admin' if role.lower() == 'admin' else 'receptionist'
+                user = (name, last_name, email, username, password, role, hotel_id)
+                user_id = DB.insert_user(user)
+                if role == 'admin':
+                    user = Admin(user_id, name.capitalize(), last_name.title(), email, username, password, role, hotel_id)
+                else:
+                    user = Receptionist(user_id, name.capitalize(), last_name.title(), email, username, password, role, hotel_id)
+                print('Funcionário cadastrado com sucesso!')
+                input('Pressione ENTER para continuar...')
+                return user
+            except InvalidInputError as e:
+                print(e)
+                input('Pressione ENTER para voltar...')
                 system('cls')
-                print('As senhas não são iguais.')
-        role = input('Informe o tipo de usuário (padrão para recepcionista): ')
-        role = 'admin' if role.lower() == 'admin' else 'receptionist'
+    
+    # Definindo a função de validação de login
+    def perform_login(self):
+        # Buscando os usuários registrados no banco de dados
+        users = self.get_all_users()
 
-        user = (name, last_name, email, username, password, role, hotel_id)
-        user_id = DB.insert_user(user)
-        if role == 'admin':
-            user = Admin(user_id, name, last_name, email, username, password, role, hotel_id)
-        else:
-            user = Receptionist(user_id, name, last_name, email, username, password, role, hotel_id)
-        return user
+        # Definindo quantidade máxima de tentativas de login, antes de encerrar o programa
+        attempts = 3
+        while attempts > 0:
+            # Lendo as credenciais do usuário
+            username = input('Usuário: ')
+            password = input('Senha: ')
+        
+            # Iterando sobre os usuários encontrados
+            for user in users:
+                # Verificando a compatibilidade entre os nomes de usuário
+                if user.username == username:
+                    # Chamando função para comparar a senha fornecida com a armazenada
+                    if UserDatabase.compare_password(password, user.password):
+                        # Retornando o usuário logado
+                        system('cls')
+                        return user
+            # Limpando o console
+            system('cls')
+            # Diminuindo uma tentativa restante
+            attempts -= 1
+            print(f'Credenciais erradas, tente novamente. Tentativas restantes {attempts}')
+        raise LoginError()
 
+    # Função criada para retornar uma lista com todos os usuários
     def get_all_users():
         user_list = []
+        # Recebendo uma lista de usuários do banco de dados
         users = DB.get_hotel_staff()
+        # Percorrendo a lista
         for user in users:
+            # Desempacotando os atributos do usuário
             user_id, name, last_name, email, username, password, role, hotel = user
+            # Criando uma instância de Admin se o usuário for admin
             if role == 'admin':
                 user_class = Admin(user_id, name, last_name, email, username, password, role, hotel)
+            # Criando uma instância de Receptionist se o usuário for receptionist
             else:
                 user_class = Receptionist(user_id, name, last_name, email, username, password, role, hotel)
             user_list.append(user_class)
+        # Retornando uma lista com as instâncias criadas
         return user_list
     
-    def get_user_by_id(user_id, hotel_id):
-        user = DB.get_user_by_id(user_id, hotel_id)
+    def get_user_by_id(user_id):
+        user = DB.get_user_by_id(user_id)
         id, name, last_name, email, username, password, role, hotel = user
         if role == 'admin':
             user = Admin(id, name, last_name, email, username, password, role, hotel)
@@ -65,7 +113,7 @@ class User:
             user = Receptionist(id, name, last_name, email, username, password, role, hotel)
         return user
     
-    def edit_user_info(self, hotel_id):
+    def edit_user_info(self):
         def change_user_name():
             name = input('Informe o novo nome do Funcionário: ')
             return name
@@ -102,9 +150,10 @@ class User:
                 self.email = change_user_email()
             elif choice == '4':
                 self.username = change_user_username()
-            DB.update_user(self, hotel_id)
+            DB.update_user(self)
         else:
             print('Opção inválida')
+        system('cls')
 
     def change_password(self):
         new_password = input('Nova senha: ')
@@ -114,43 +163,67 @@ class User:
         else:
             self.password = DB.change_password(self.user_id, new_password)
 
-    def delete_user(self, hotel):
-        DB.delete_user(self.user_id)
-        hotel.remove_employee(self)
-    
-    # Definindo a função de validação de login
-    def perform_login(self):
-        # Buscando os usuários registrados no banco de dados
-        users = self.get_all_users()
-
-        # Lendo as credenciais do usuário
-        username = input('Usuário: ')
-        password = input('Senha: ')
-
-        # Definindo quantidade máxima de tentativas de login, antes de encerrar o programa
-        attempts = 3
-        while attempts > 1:
-            # Iterando sobre os usuários encontrados
-            for user in users:
-                # Verificando a compatibilidade entre os nomes de usuário
-                if user.username == username:
-                    # Chamando função para comparar a senha fornecida com a armazenada
-                    if UserDatabase.compare_password(password, user.password):
-                        # Retornando o usuário logado
-                        system('cls')
-                        return user
-            # Limpando o console
+    def show_user_details(current_hotel):
+        current_hotel.refresh_hotel()
+        user_list = current_hotel.staff
+        for user in user_list:
+            print(f'{user.user_id}. {user.name} {user.last_name} ({user.username})')
+        choice = input('Informe o ID do funcionário desejado: ')
+        int_choice = int(choice)
+        user = User.get_user_by_id(int_choice)
+        if user:
             system('cls')
-            # Diminuindo uma tentativa restante
-            attempts -= 1
-            print(f'Credenciais erradas, tente novamente. Tentativas restantes {attempts}')
-        raise LoginError()
+            print(f'Nome: {user.name} {user.last_name}\nE-mail: {user.email}')
+            print(f'Username: {user.username}\nHotel: {current_hotel.name}')
+            choice = menu(user_management_menu, current_hotel, user, User.edit_user_info, User.change_password)
+            if choice == '1':
+                user.edit_user_info()
+            elif choice == '2':
+                user.change_password()
+            elif choice == '3':
+                pass
+            input('\nPressione Enter para voltar...')
+
+    def show_all_staff():
+        user_list = User.get_all_users()
+        for user in user_list:
+            print(f'{user.user_id}. {user.name} {user.last_name} ({user.username})')
+        input('\nPressione Enter para voltar...')
+        system('cls')
+
+    def eliminate_user(current_hotel):
+        users = User.get_all_users()
+        if len(users) > 1:
+            current_hotel.refresh_hotel()
+            user_list = current_hotel.staff
+            for user in user_list:
+                print(f'{user.user_id}. {user.name} {user.last_name} ({user.username})')
+            choice = input('Informe o ID do funcionário a ser deletado: ')
+            int_choice = int(choice)
+            user = User.get_user_by_id(int_choice)
+            DB.delete_user(user.user_id)
+            current_hotel.refresh_hotel()
+        else:
+            print('Você não pode excluir o único funcionário cadastrado!')
+        input('\nPressione Enter para voltar...')
+        system('cls')
+
+    # Função para gerenciamento de funcionários
+    def staff_management(current_hotel):
+        while True:
+            system('cls')
+            # Chamando o menu e recebendo a opção escolhida
+            result = menu(staff_management_menu, current_hotel, User.create_user, User.show_user_details, User.show_all_staff, User.eliminate_user)
+            if result:
+                print(result)
+                print('\nPressione ENTER para voltar...')
+                break   
 
 # Criando uma classe específica para funcionários com maior permissionamento
 class Admin(User):
     # Criando usuário admin
     def __init__(self, user_id, name, last_name, email, username, password, role, hotel_id):
-        super().__init__(user_id, name, last_name, email, username, password, role, hotel_id)
+        super().__init__(user_id, name, last_name, email, username, password, role, hotel_id)    
 
 class Receptionist(User):
     # Criando funcionário comum

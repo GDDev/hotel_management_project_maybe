@@ -78,12 +78,12 @@ class UserDatabase (Database):
                 # Encerrando a conexão
                 self.connection.close()
 
-    def get_user_by_id(self, user_id, hotel_id):
+    def get_user_by_id(self, user_id):
         try:
             self.connect()
             cursor = self.connection.cursor()
-            query = 'SELECT * FROM Users WHERE id == ? AND hotel_id == ?'
-            values = (str(user_id), str(hotel_id))
+            query = 'SELECT * FROM Users WHERE id == ?'
+            values = str(user_id)
             cursor.execute(query, values)
             user = cursor.fetchone()
             cursor.close()
@@ -94,10 +94,10 @@ class UserDatabase (Database):
             if self.connection:
                 self.disconnect()
 
-    def update_user(self, user, hotel_id):
+    def update_user(self, user):
         try:
             query = 'UPDATE Users SET name = ?, last_name = ?, email = ?, username = ? WHERE id == ?'
-            _, db_name, db_last_name, db_email, db_username, *_ = self.get_user_by_id(user.user_id, hotel_id)
+            _, db_name, db_last_name, db_email, db_username, *_ = self.get_user_by_id(user.user_id)
             if user.name != db_name: db_name = user.name
             if user.last_name != db_last_name: db_last_name =  user.last_name
             if user.email != db_email: db_email = user.email

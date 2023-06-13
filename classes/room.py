@@ -62,6 +62,22 @@ class Room:
             room_class = Room(room_id, number, room_type, capacity, price, hotel_id, is_occupied)
             room_list.append(room_class)
         return room_list
+    
+    def get_available_rooms(current_hotel):
+        available_rooms = []
+        room_list = current_hotel.rooms
+        for room in room_list:
+            if room.is_occupied == False:
+                available_rooms.append(room)
+        return available_rooms
+    
+    def get_occupied_rooms(current_hotel):
+        occupied_rooms = []
+        room_list = current_hotel.rooms
+        for room in room_list:
+            if room.is_occupied == True:
+                occupied_rooms.append(room)
+        return occupied_rooms
 
     def get_room(room_id):
         room = DB.get_room_by_id(room_id)
@@ -81,37 +97,31 @@ class Room:
         DB.checkout_room(self.room_id)
         return self.price
 
-    def display_all_rooms(self, hotel_id):
-        rooms = self.get_all_rooms(hotel_id)
+    def display_available_rooms(rooms):
         for room in rooms:
-            if room.is_occupied == False:
-                print(f'Quarto {room.number}, tipo: {room.type.value}, capacidade: {room.capacity}, preço por noite: R$ {room.price:.2f}')
+            print(f'Quarto {room.number}, tipo: {room.type.value}, capacidade: {room.capacity}, preço por noite: R$ {room.price:.2f}')
         if rooms == []:
-            print('Nenhum quarto cadastrado.')
+            print('Nenhum quarto disponível.')
+        input('\nPressione ENTER para continuar...')
+        system('cls')
 
-    def display_occupied_rooms(self, hotel_id):
-        rooms = self.get_all_rooms(hotel_id)
-        occupied_rooms = []
+    def display_occupied_rooms(rooms):
         for room in rooms:
-            if room.is_occupied == True:
-                print(f'Quarto {room.number}, preço por noite: R$ {room.price:.2f}')
-                occupied_rooms.append(room)
-        if rooms == []:
-            print('Nenhum quarto cadastrado.')
-        return occupied_rooms
+            print(f'Quarto {room.number}, tipo: {room.type.value}, capacidade: {room.capacity}, preço por noite: R$ {room.price:.2f}')
 
-    def choose_room(self, hotel_id):
-        try:
-            system('cls')
-            rooms = self.get_all_rooms(hotel_id)
-            self.display_all_rooms(self, hotel_id)
+
+    def choose_room(current_hotel):
+        system('cls')
+        rooms = Room.get_available_rooms(current_hotel)
+        if rooms:
+            Room.display_available_rooms(rooms)
             choice = input('Escolha o quarto: ')
             int_choice = int(choice)
             for room in rooms:
                 if int_choice == room.number:
                     chosen_room = room
-                    system('cls')
                     return chosen_room
             raise InvalidChoiceError('Quarto inválido.')
-        except ValueError as e:
-            pass
+        print('Nenhum quarto disponível.')
+        input('\nPressione ENTER para continuar...')
+        system('cls')

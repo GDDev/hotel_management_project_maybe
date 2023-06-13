@@ -2,6 +2,7 @@ from os import system
 from globals import db_name
 from data.guest_database import GuestDatabase
 from classes.checkin import CheckIn
+from utils.menus import guest_management_menu, guests_menus, menu
 
 DB = GuestDatabase(db_name)
 
@@ -20,6 +21,42 @@ class Guest:
         self.phone = phone
         self.history = self.load_stay_history()
 
+
+    def all_guests(current_hotel):
+        guests = current_hotel.display_all_guests()
+        print('0. Voltar')
+        choice = input('informe o ID do hóspede: ')
+        int_choice = int(choice)
+        if int_choice == 0:
+            return None
+        for guest in guests:
+            if guest.guest_id == int_choice:
+                chosen_guest = guest
+                return chosen_guest
+        system('cls')
+
+    def find_guest():
+        chosen_guest = Guest.get_guest_by_name()
+        if not chosen_guest:
+            print('Hóspede não encontrado')
+            input('Pressione Enter para voltar...')
+        system('cls')
+        return chosen_guest
+
+    def guests_management(current_hotel):
+        while True:
+            system('cls')
+            # Chamando o menu e recebendo a opção escolhida
+            chosen_guest = menu(guests_menus, current_hotel, Guest.all_guests, Guest.find_guest)
+            if chosen_guest == 'break':
+                break
+            if chosen_guest:
+                system('cls')
+                result = menu(guest_management_menu, current_hotel, chosen_guest, chosen_guest.display_guest_info, chosen_guest.edit_guest_info)
+                if result:
+                    print(result)
+                    break
+
     def create_guest():
         full_name = input('Nome completo: ').split(' ')
         name = full_name[0]
@@ -29,7 +66,7 @@ class Guest:
         phone = input('Número de telefone: ')
         guest = (name.upper(), last_name.upper(), email, phone)
         guest_id = DB.insert_guest(guest)
-        guest = Guest(guest_id, name, last_name, email, phone)
+        guest = Guest(guest_id, name.capitalize(), last_name.title(), email, phone)
         return guest
 
     def get_all_guests():
@@ -42,7 +79,10 @@ class Guest:
         return guest_list
     
     def get_guest_by_name():
+        print('0. Voltar')
         guest_name = input('Digite o nome do hóspede: ')
+        if guest_name == '0':
+            return None
         guests = DB.get_guest_by_name(guest_name)
         guest_list = []
         if guests:
@@ -61,7 +101,6 @@ class Guest:
     def display_guest_info(self):
         from classes.hotel import Hotel
         from classes.room import Room
-        from datetime import datetime
 
         print(f'{self.name} {self.last_name} - ID {self.guest_id}')
         print(f'E-mail: {self.email}')
@@ -82,6 +121,7 @@ class Guest:
         else:
             print('Hóspede não possue histórico.')
         input('\nPressione Enter para voltar...')
+        system('cls')
 
     def add_stay_to_history(self, checkin):
         self.history.append(checkin)
@@ -104,7 +144,8 @@ class Guest:
                 f'1. Nome = {self.name}',
                 f'2. Sobrenome = {self.last_name}',
                 f'3. E-mail = {self.email}',
-                f'4. Número de telefone = {self.phone}']
+                f'4. Número de telefone = {self.phone}',
+                '5. Voltar']
         system('cls')
         # Exibindo o menu
         for line in menu:
@@ -123,6 +164,8 @@ class Guest:
                 self.email = change_guest_email()
             elif choice == '4':
                 self.phone = change_guest_phone()
+            elif choice == '5':
+                return self
             DB.update_guest(self)
         else:
             print('Opção inválida')
