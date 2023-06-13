@@ -43,7 +43,7 @@ class User:
                         print('As senhas não são iguais.')
                 role = input('Informe o tipo de usuário (ENTER para recepcionista): ')
                 role = 'admin' if role.lower() == 'admin' else 'receptionist'
-                user = (name, last_name, email, username, password, role, hotel_id)
+                user = (name.upper(), last_name.upper(), email, username, password, role, hotel_id)
                 user_id = DB.insert_user(user)
                 if role == 'admin':
                     user = Admin(user_id, name.capitalize(), last_name.title(), email, username, password, role, hotel_id)
@@ -59,31 +59,39 @@ class User:
     
     # Definindo a função de validação de login
     def perform_login(self):
-        # Buscando os usuários registrados no banco de dados
-        users = self.get_all_users()
+        try:
+            # Buscando os usuários registrados no banco de dados
+            users = self.get_all_users()
 
-        # Definindo quantidade máxima de tentativas de login, antes de encerrar o programa
-        attempts = 3
-        while attempts > 0:
-            # Lendo as credenciais do usuário
-            username = input('Usuário: ')
-            password = input('Senha: ')
-        
-            # Iterando sobre os usuários encontrados
-            for user in users:
-                # Verificando a compatibilidade entre os nomes de usuário
-                if user.username == username:
-                    # Chamando função para comparar a senha fornecida com a armazenada
-                    if UserDatabase.compare_password(password, user.password):
-                        # Retornando o usuário logado
-                        system('cls')
-                        return user
-            # Limpando o console
-            system('cls')
-            # Diminuindo uma tentativa restante
-            attempts -= 1
-            print(f'Credenciais erradas, tente novamente. Tentativas restantes {attempts}')
-        raise LoginError()
+            # Definindo quantidade máxima de tentativas de login, antes de encerrar o programa
+            attempts = 3
+            while attempts > 0:
+                # Lendo as credenciais do usuário
+                username = input('Usuário: ')
+                validate_username(username)
+                password = input('Senha: ')
+            
+                # Iterando sobre os usuários encontrados
+                for user in users:
+                    # Verificando a compatibilidade entre os nomes de usuário
+                    if user.username == username:
+                        # Chamando função para comparar a senha fornecida com a armazenada
+                        if UserDatabase.compare_password(password, user.password):
+                            # Retornando o usuário logado
+                            system('cls')
+                            return user
+                # Limpando o console
+                system('cls')
+                # Diminuindo uma tentativa restante
+                attempts -= 1
+                print(f'Credenciais erradas, tente novamente. Tentativas restantes {attempts}')
+            raise LoginError()
+        except LoginError as e:
+            print(e)
+            input('\n Pressione ENTER para continuar...')
+        except InvalidInputError as e:
+            print(e)
+            input('\n Pressione ENTER para continuar...')
 
     # Função criada para retornar uma lista com todos os usuários
     def get_all_users():

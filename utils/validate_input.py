@@ -20,4 +20,4 @@ def validate_email(email):
 def validate_username(username):
     pattern = r'^[a-zA-Z0-9_-]+$'
     if re.match(pattern, username) is None:
-        raise InvalidInputError('Username deve ser alfanumérico.')
+        raise InvalidInputError('Nome de usuário deve ser alfanumérico.')

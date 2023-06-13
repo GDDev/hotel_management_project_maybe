@@ -2,7 +2,9 @@ from os import system
 from globals import db_name
 from data.guest_database import GuestDatabase
 from classes.checkin import CheckIn
+from utils.custom_exceptions import InvalidInputError
 from utils.menus import guest_management_menu, guests_menus, menu
+from utils.validate_input import validate_email, validate_name
 
 DB = GuestDatabase(db_name)
 
@@ -58,16 +60,20 @@ class Guest:
                     break
 
     def create_guest():
-        full_name = input('Nome completo: ').split(' ')
-        name = full_name[0]
-        last_name = full_name[1:len(full_name)]
-        last_name = ' '.join(last_name)
-        email = input('E-mail: ')
-        phone = input('Número de telefone: ')
-        guest = (name.upper(), last_name.upper(), email, phone)
-        guest_id = DB.insert_guest(guest)
-        guest = Guest(guest_id, name.capitalize(), last_name.title(), email, phone)
-        return guest
+        try:
+            full_name = input('Nome completo: ')
+            name, last_name = validate_name(full_name)
+            email = input('E-mail: ')
+            validate_email(email)
+            phone = input('Número de telefone: ')
+            guest = (name.upper(), last_name.upper(), email, phone)
+            guest_id = DB.insert_guest(guest)
+            guest = Guest(guest_id, name.capitalize(), last_name.title(), email, phone)
+            return guest
+        except InvalidInputError as e:
+            print(e)
+            input('Pressione ENTER para voltar...')
+            system('cls')
 
     def get_all_guests():
         guest_list = []
