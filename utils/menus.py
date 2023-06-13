@@ -109,38 +109,51 @@ def user_management_menu(current_hotel, user, *functions):
 
 # Criando função para exibir o menu escolhido
 def menu(menu_list, current_hotel, *functions):
-    # Validando a opção escolhida
-    def validate_menu_choice(length):
-        while True:
-            # Recebendo opção escolhida
-            choice = input('Selecione uma opção: ')
-            system('cls')
-            int_choice = int(choice)
-            # Verificando se é uma das existentes
-            if int_choice in range(1, length):
-                # Opção válida é retornada
-                return choice
-            raise exp.InvalidChoiceError()
-    
-    show_list = menu_list(current_hotel, *functions)
+    try:
+        # Validando a opção escolhida
+        def validate_menu_choice(length):
+            while True:
+                # Recebendo opção escolhida
+                choice = input('Selecione uma opção: ')
+                system('cls')
+                int_choice = int(choice)
+                # Verificando se é uma das existentes
+                if int_choice in range(1, length):
+                    # Opção válida é retornada
+                    return choice
+                raise exp.InvalidChoiceError()
+        
+        show_list = menu_list(current_hotel, *functions)
 
-    for key, value in show_list.items():
-        if key == 'title':
-            print(value)
+        for key, value in show_list.items():
+            if key == 'title':
+                print(value)
+            else:
+                print(key)
+        # Recebendo número de opções do menu (não precisa descontar por causa do título)
+        length = len(show_list)
+        # Vendo se o usuário digitou uma opção válida
+        choice = validate_menu_choice(length)
+        for key, value in show_list.items():
+            if key.startswith(choice):
+                option = value
+                break
+        if option == 'break':
+            return 'break'
         else:
-            print(key)
-    # Recebendo número de opções do menu (não precisa descontar por causa do título)
-    length = len(show_list)
-    # Vendo se o usuário digitou uma opção válida
-    choice = validate_menu_choice(length)
-    for key, value in show_list.items():
-        if key.startswith(choice):
-            option = value
-            break
-    if option == 'break':
-        return 'break'
-    else:
-        function, *params = option
-        result = function(*params)
-    if result:
-        return result
+            function, *params = option
+            result = function(*params)
+        if result:
+            return result
+    except ValueError as e:
+        print('Opção inválida, tente novamente.')
+        input('Pressione ENTER para continuar...')
+        system('cls')
+    except AttributeError as e:
+        print('Opção inválida, tente novamente.')
+        input('Pressione ENTER para continuar...')
+        system('cls')
+    except exp.InvalidChoiceError as e:
+        print(e)
+        input('Pressione ENTER para continuar...')
+        system('cls')
