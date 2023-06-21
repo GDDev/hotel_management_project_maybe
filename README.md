@@ -1,8 +1,6 @@
-# ⚠️*** *THIS IS JUST A COLLEGE ASSIGNMENT, NOT A TRUE PROJECT* ***⚠️ 
+# Hotel Management Project (beginner)
 
 # run ```pip install -r requirements.txt```
 
 # Hello there, friend :)
-#### Don't waste your time here...
-##### Go home...
-###### Seriously there is nothing to see here
+## This is a beginner level software, don't expect much
